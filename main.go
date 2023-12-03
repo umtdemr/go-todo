@@ -3,24 +3,24 @@ package main
 import (
 	"fmt"
 	"github.com/umtdemr/go-todo/respond"
+	"github.com/umtdemr/go-todo/todo"
 	"net/http"
-	"time"
 )
 
-type todo struct {
-	Title     string    `json:"title"`
-	Done      bool      `json:"done"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+type Database struct {
+	Todos []todo.Todo
 }
 
-func handleHome(w http.ResponseWriter, r *http.Request) {
-	initialTodoS := []todo{todo{Title: "initial", CreatedAt: time.Now()}}
-	respond.Respond(w, initialTodoS)
+var db = Database{
+	Todos: []todo.Todo{todo.NewTodo("initial")},
+}
+
+func handleList(w http.ResponseWriter, r *http.Request) {
+	respond.Respond(w, db.Todos)
 }
 
 func main() {
-	http.HandleFunc("/", handleHome)
+	http.HandleFunc("/list", handleList)
 	err := http.ListenAndServe(":8080", nil)
 
 	if err != nil {
