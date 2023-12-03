@@ -23,6 +23,10 @@ type UpdateTodoData struct {
 	Done  *bool   `json:"done,omitempty"`
 }
 
+type DeleteTodoData struct {
+	Id *string `json:"id,omitempty"`
+}
+
 func NewTodo(title string) *Todo {
 	return &Todo{
 		Id:        uuid.New(),

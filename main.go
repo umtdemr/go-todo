@@ -8,6 +8,7 @@ import (
 	"github.com/umtdemr/go-todo/todo"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -91,10 +92,40 @@ func handleUpdate(w http.ResponseWriter, r *http.Request) {
 	respond.Respond(w, todoItem)
 }
 
+func handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodDelete {
+		respond.WithError(w, "Only GET and DELETE requests are allowed", http.StatusBadRequest)
+		return
+	}
+
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) != 2 {
+		respond.WithError(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	todoId := parts[1]
+
+	parsedTodoId, parseUuidErr := uuid.Parse(todoId)
+
+	if parseUuidErr != nil {
+		respond.WithError(w, "the id you sent is invalid", http.StatusBadRequest)
+		return
+	}
+
+	todoIndex := slices.IndexFunc(*db.Todos, func(c *todo.Todo) bool { return c.Id == parsedTodoId })
+	if r.Method == http.MethodDelete {
+		*(db.Todos) = slices.Delete(*db.Todos, todoIndex, 1)
+		respond.Respond(w, (*db.Todos)[todoIndex])
+	} else {
+		respond.Respond(w, (*db.Todos)[todoIndex])
+	}
+}
+
 func main() {
 	http.HandleFunc("/list", handleList)
 	http.HandleFunc("/create", handleAdd)
 	http.HandleFunc("/update", handleUpdate)
+	http.HandleFunc("/", handleFetchAndDelete)
 	err := http.ListenAndServe(":8080", nil)
 
 	if err != nil {
