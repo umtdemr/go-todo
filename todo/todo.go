@@ -9,6 +9,10 @@ type Todo struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type CreateTodoData struct {
+	Title string `json:"title"`
+}
+
 func NewTodo(title string) Todo {
 	return Todo{
 		Title:     title,
