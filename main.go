@@ -9,11 +9,13 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
 type Database struct {
 	Todos *[]*todo.Todo
+	mutex sync.Mutex
 }
 
 var db = Database{
@@ -47,7 +49,9 @@ func handleAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdTodo := todo.NewTodo(createTodoType.Title)
+	db.mutex.Lock()
 	*db.Todos = append(*db.Todos, createdTodo)
+	db.mutex.Unlock()
 
 	respond.Respond(w, createdTodo)
 }
@@ -76,7 +80,12 @@ func handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	db.mutex.Lock()
 	todoIndex := slices.IndexFunc(*db.Todos, func(c *todo.Todo) bool { return c.Id == id })
+	if todoIndex == -1 {
+		respond.WithError(w, "We couldn't find the todo you are searching for", http.StatusBadRequest)
+		return
+	}
 	todoItem := (*db.Todos)[todoIndex]
 
 	if updateData.Title != nil {
@@ -88,6 +97,7 @@ func handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	todoItem.UpdatedAt = time.Now()
+	db.mutex.Unlock()
 
 	respond.Respond(w, todoItem)
 }
@@ -112,11 +122,23 @@ func handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	db.mutex.Lock()
 	todoIndex := slices.IndexFunc(*db.Todos, func(c *todo.Todo) bool { return c.Id == parsedTodoId })
+	if todoIndex == -1 {
+		respond.WithError(w, "We couldn't find the todo you are searching for", http.StatusBadRequest)
+		return
+	}
+
 	if r.Method == http.MethodDelete {
-		*(db.Todos) = slices.Delete(*db.Todos, todoIndex, 1)
+		nextId := todoIndex + 1
+		if len(*db.Todos)-1 > nextId {
+			nextId = len(*db.Todos) - 1
+		}
+		*(db.Todos) = slices.Delete(*db.Todos, todoIndex, nextId)
+		db.mutex.Unlock()
 		respond.Respond(w, (*db.Todos)[todoIndex])
 	} else {
+		db.mutex.Unlock()
 		respond.Respond(w, (*db.Todos)[todoIndex])
 	}
 }
