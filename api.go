@@ -14,10 +14,19 @@ import (
 
 type APIServer struct {
 	listenAddr string
+	repository Repository
 }
 
-func NewAPIServer(listenAddr string) *APIServer {
-	return &APIServer{listenAddr: listenAddr}
+func NewAPIServer(listenAddr string, repository Repository) *APIServer {
+	return &APIServer{listenAddr: listenAddr, repository: repository}
+}
+
+func (s *APIServer) Run() {
+	http.HandleFunc("/list", handleList)
+	http.HandleFunc("/create", handleAdd)
+	http.HandleFunc("/update", handleUpdate)
+	http.HandleFunc("/", handleFetchAndDelete)
+	http.ListenAndServe(s.listenAddr, nil)
 }
 
 func Respond(w http.ResponseWriter, data interface{}) {
@@ -189,12 +198,4 @@ func handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
 		db.mutex.Unlock()
 		Respond(w, (*db.Todos)[todoIndex])
 	}
-}
-
-func (s *APIServer) Run() {
-	http.HandleFunc("/list", handleList)
-	http.HandleFunc("/create", handleAdd)
-	http.HandleFunc("/update", handleUpdate)
-	http.HandleFunc("/", handleFetchAndDelete)
-	http.ListenAndServe(s.listenAddr, nil)
 }
