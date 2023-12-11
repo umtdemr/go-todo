@@ -26,3 +26,20 @@ func NewPostgresStore(connStr string) (*PostgresStore, error) {
 
 	return &PostgresStore{conn}, nil
 }
+
+func (store *PostgresStore) Init() error {
+	return store.CreateTodoTable()
+}
+
+func (store *PostgresStore) CreateTodoTable() error {
+	query := `CREATE TABLE IF NOT EXISTS todo(
+		id serial PRIMARY KEY,
+		title varchar(255),
+		done boolean DEFAULT false,
+		created_at timestamp DEFAULT now(),
+		updated_at timestamp DEFAULT now()
+	)`
+
+	_, err := store.db.Exec(context.Background(), query)
+	return err
+}

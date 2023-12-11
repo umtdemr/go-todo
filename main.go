@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/spf13/viper"
 	"os"
@@ -16,7 +17,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error while connecting to db: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Println(store)
+	defer store.db.Close(context.Background())
+
+	if initErr := store.Init(); initErr != nil {
+		fmt.Printf("Error in init: %s\n", initErr)
+		os.Exit(1)
+	}
+
 	server := NewAPIServer(":8080", store)
 	server.Run()
 }
