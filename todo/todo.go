@@ -1,12 +1,11 @@
 package todo
 
 import (
-	"github.com/google/uuid"
 	"time"
 )
 
 type Todo struct {
-	Id        uuid.UUID
+	Id        int
 	Title     string    `json:"title"`
 	Done      bool      `json:"done"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -29,7 +28,7 @@ type DeleteTodoData struct {
 
 func NewTodo(title string) *Todo {
 	return &Todo{
-		Id:        uuid.New(),
+		Id:        1,
 		Title:     title,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

@@ -7,15 +7,12 @@ import (
 )
 
 type Repository interface {
-	CreateTodo(data *todo.CreateTodoData) error
+	CreateTodo(data *todo.Todo) error
+	GetAllTodos() ([]todo.Todo, error)
 }
 
 type PostgresStore struct {
 	db *pgx.Conn
-}
-
-func (store *PostgresStore) CreateTodo(data *todo.CreateTodoData) error {
-	return nil
 }
 
 func NewPostgresStore(connStr string) (*PostgresStore, error) {
@@ -42,4 +39,45 @@ func (store *PostgresStore) CreateTodoTable() error {
 
 	_, err := store.db.Exec(context.Background(), query)
 	return err
+}
+
+func (store *PostgresStore) CreateTodo(data *todo.Todo) error {
+	query := `INSERT INTO todo(title) VALUES (@title)`
+	args := pgx.NamedArgs{
+		"title": data.Title,
+	}
+
+	_, err := store.db.Exec(context.Background(), query, args)
+
+	return err
+}
+
+func (store *PostgresStore) GetAllTodos() ([]todo.Todo, error) {
+	query := `SELECT * FROM todo`
+
+	rows, err := store.db.Query(context.Background(), query)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var todos []todo.Todo
+
+	for rows.Next() {
+		var t todo.Todo
+
+		err := rows.Scan(&t.Id, &t.Title, &t.Done, &t.CreatedAt, &t.UpdatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+		todos = append(todos, t)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return todos, nil
 }
