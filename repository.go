@@ -7,15 +7,11 @@ import (
 )
 
 type Repository interface {
-	CreateTodo(data *todo.CreateTodoData) error
+	CreateTodo(data *todo.Todo) error
 }
 
 type PostgresStore struct {
 	db *pgx.Conn
-}
-
-func (store *PostgresStore) CreateTodo(data *todo.CreateTodoData) error {
-	return nil
 }
 
 func NewPostgresStore(connStr string) (*PostgresStore, error) {
@@ -41,5 +37,16 @@ func (store *PostgresStore) CreateTodoTable() error {
 	)`
 
 	_, err := store.db.Exec(context.Background(), query)
+	return err
+}
+
+func (store *PostgresStore) CreateTodo(data *todo.Todo) error {
+	query := `INSERT INTO todo(title) VALUES (@title)`
+	args := pgx.NamedArgs{
+		"title": data.Title,
+	}
+
+	_, err := store.db.Exec(context.Background(), query, args)
+
 	return err
 }

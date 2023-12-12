@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/umtdemr/go-todo/todo"
 	"net/http"
+	"os"
 	"slices"
 	"strings"
 	"sync"
@@ -23,7 +24,7 @@ func NewAPIServer(listenAddr string, repository Repository) *APIServer {
 
 func (s *APIServer) Run() {
 	http.HandleFunc("/list", handleList)
-	http.HandleFunc("/create", handleAdd)
+	http.HandleFunc("/create", s.handleAdd)
 	http.HandleFunc("/update", handleUpdate)
 	http.HandleFunc("/", handleFetchAndDelete)
 	http.ListenAndServe(s.listenAddr, nil)
@@ -83,7 +84,7 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 	Respond(w, db.Todos)
 }
 
-func handleAdd(w http.ResponseWriter, r *http.Request) {
+func (s *APIServer) handleAdd(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		RespondWithError(w, "not valid", http.StatusBadRequest)
 		return
@@ -106,9 +107,10 @@ func handleAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	createdTodo := todo.NewTodo(createTodoType.Title)
-	db.mutex.Lock()
-	*db.Todos = append(*db.Todos, createdTodo)
-	db.mutex.Unlock()
+	createErr := s.repository.CreateTodo(createdTodo)
+	if createErr != nil {
+		fmt.Fprintf(os.Stderr, "error while generating the todo: %s\n", createErr)
+	}
 
 	Respond(w, createdTodo)
 }
