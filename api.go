@@ -21,7 +21,7 @@ func NewAPIServer(listenAddr string, repository Repository) *APIServer {
 func (s *APIServer) Run() {
 	http.HandleFunc("/list", s.handleList)
 	http.HandleFunc("/create", s.handleAdd)
-	//http.HandleFunc("/update", handleUpdate)
+	http.HandleFunc("/update", s.handleUpdate)
 	//http.HandleFunc("/", handleFetchAndDelete)
 	http.ListenAndServe(s.listenAddr, nil)
 }
@@ -117,51 +117,36 @@ func (s *APIServer) handleAdd(w http.ResponseWriter, r *http.Request) {
 	Respond(w, createdTodo)
 }
 
-//func handleUpdate(w http.ResponseWriter, r *http.Request) {
-//	if r.Method != http.MethodPost {
-//		RespondWithError(w, "Only POST methods are allowed", http.StatusBadRequest)
-//		return
-//	}
-//
-//	var updateData todo.UpdateTodoData
-//
-//	decoder := json.NewDecoder(r.Body)
-//
-//	err := decoder.Decode(&updateData)
-//
-//	if err != nil {
-//		RespondWithError(w, fmt.Sprintf("error while parsing: %s", err), http.StatusBadRequest)
-//		return
-//	}
-//
-//	id, uuidParseErr := uuid.Parse(updateData.Id)
-//
-//	if uuidParseErr != nil {
-//		RespondWithError(w, "the id you sent is invalid", http.StatusBadRequest)
-//		return
-//	}
-//
-//	db.mutex.Lock()
-//	todoIndex := slices.IndexFunc(*db.Todos, func(c *todo.Todo) bool { return c.Id == id })
-//	if todoIndex == -1 {
-//		RespondWithError(w, "We couldn't find the todo you are searching for", http.StatusBadRequest)
-//		return
-//	}
-//	todoItem := (*db.Todos)[todoIndex]
-//
-//	if updateData.Title != nil {
-//		todoItem.Title = *updateData.Title
-//	}
-//
-//	if updateData.Done != nil {
-//		todoItem.Done = *updateData.Done
-//	}
-//
-//	todoItem.UpdatedAt = time.Now()
-//	db.mutex.Unlock()
-//
-//	Respond(w, todoItem)
-//}
+func (s *APIServer) handleUpdate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		RespondWithError(w, "Only POST methods are allowed", http.StatusBadRequest)
+		return
+	}
+
+	var updateData todo.UpdateTodoData
+
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&updateData)
+
+	if err != nil {
+		RespondWithError(w, fmt.Sprintf("error while parsing: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	if updateData.Id == nil {
+		RespondWithError(w, "ID is required for updating", http.StatusBadRequest)
+		return
+	}
+
+	dbErr := s.repository.UpdateTodo(&updateData)
+	if dbErr != nil {
+		RespondWithError(w, fmt.Sprintf("Error while updating: %s", dbErr), http.StatusBadRequest)
+		return
+	}
+
+	Respond(w, updateData)
+}
 
 /*func handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodDelete {

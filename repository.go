@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/umtdemr/go-todo/todo"
+	"strings"
 )
 
 type Repository interface {
 	CreateTodo(data *todo.Todo) error
 	GetAllTodos() ([]todo.Todo, error)
+	UpdateTodo(data *todo.UpdateTodoData) error
 }
 
 type PostgresStore struct {
@@ -80,4 +83,34 @@ func (store *PostgresStore) GetAllTodos() ([]todo.Todo, error) {
 	}
 
 	return todos, nil
+}
+
+func (store *PostgresStore) UpdateTodo(data *todo.UpdateTodoData) error {
+	var updateBuilder strings.Builder
+	updateBuilder.WriteString("UPDATE todo SET ")
+	var updates []string
+	var args []interface{}
+
+	if data.Title != nil {
+		updates = append(updates, "title = $1")
+		args = append(args, data.Title)
+	}
+
+	if data.Done != nil {
+		updates = append(updates, fmt.Sprintln("done = $%d", len(args)+1))
+		args = append(args, data.Done)
+	}
+
+	updateBuilder.WriteString(strings.Join(updates, ", "))
+	updateBuilder.WriteString(" ") // Add space before WHERE clause
+
+	updateBuilder.WriteString(fmt.Sprintf("WHERE id = %d", *data.Id))
+
+	fmt.Println(updateBuilder.String(), args)
+
+	iii, err := store.db.Exec(context.Background(), updateBuilder.String(), args...)
+
+	fmt.Println(iii)
+
+	return err
 }
