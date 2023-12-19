@@ -11,11 +11,11 @@ import (
 )
 
 type Repository interface {
-	CreateTodo(data *todo.Todo) error
+	CreateTodo(data *todo.Todo) (*todo.Todo, error)
 	GetAllTodos() ([]todo.Todo, error)
 	GetTodo(todoId int) (*todo.Todo, error)
-	UpdateTodo(data *todo.UpdateTodoData) error
-	RemoveTodo(todoId int) error
+	UpdateTodo(data *todo.UpdateTodoData) (*todo.Todo, error)
+	RemoveTodo(todoId int) (*todo.Todo, error)
 }
 
 type PostgresStore struct {
@@ -48,15 +48,19 @@ func (store *PostgresStore) CreateTodoTable() error {
 	return err
 }
 
-func (store *PostgresStore) CreateTodo(data *todo.Todo) error {
-	query := `INSERT INTO todo(title) VALUES (@title)`
+func (store *PostgresStore) CreateTodo(data *todo.Todo) (*todo.Todo, error) {
+	query := `INSERT INTO todo(title) VALUES (@title) RETURNING *`
 	args := pgx.NamedArgs{
 		"title": data.Title,
 	}
 
-	_, err := store.db.Exec(context.Background(), query, args)
+	rows := store.db.QueryRow(context.Background(), query, args)
+	createdTodo, scanErr := todo.ScanTodo(rows)
+	if scanErr != nil {
+		return nil, scanErr
+	}
 
-	return err
+	return createdTodo, nil
 }
 
 func (store *PostgresStore) GetAllTodos() ([]todo.Todo, error) {
@@ -89,14 +93,14 @@ func (store *PostgresStore) GetAllTodos() ([]todo.Todo, error) {
 	return todos, nil
 }
 
-func (store *PostgresStore) UpdateTodo(data *todo.UpdateTodoData) error {
+func (store *PostgresStore) UpdateTodo(data *todo.UpdateTodoData) (*todo.Todo, error) {
 	var updateBuilder strings.Builder
 	updateBuilder.WriteString("UPDATE todo SET ")
 	var updates []string
 	var args []interface{}
 
 	if data.Title == nil && data.Done == nil {
-		return errors.New("no field is provided")
+		return nil, errors.New("no field is provided")
 	}
 
 	if data.Title != nil {
@@ -116,19 +120,17 @@ func (store *PostgresStore) UpdateTodo(data *todo.UpdateTodoData) error {
 	args = append(args, time.Now())
 	updateBuilder.WriteString(" ") // Add space before WHERE clause
 
-	updateBuilder.WriteString(fmt.Sprintf("WHERE id = %d", *data.Id))
+	updateBuilder.WriteString(fmt.Sprintf("WHERE id = %d RETURNING *", *data.Id))
 
-	updateResponse, err := store.db.Exec(context.Background(), updateBuilder.String(), args...)
+	rows := store.db.QueryRow(context.Background(), updateBuilder.String(), args...)
 
-	if err != nil {
-		return err
+	updatedData, updateScanErr := todo.ScanTodo(rows)
+
+	if updateScanErr != nil {
+		return nil, updateScanErr
 	}
 
-	if updateResponse.RowsAffected() == 0 {
-		return errors.New("couldn't update")
-	}
-
-	return nil
+	return updatedData, nil
 }
 
 func (store *PostgresStore) GetTodo(todoId int) (*todo.Todo, error) {
@@ -146,22 +148,19 @@ func (store *PostgresStore) GetTodo(todoId int) (*todo.Todo, error) {
 	return singleTodo, nil
 }
 
-func (store *PostgresStore) RemoveTodo(todoId int) error {
-	query := `DELETE FROM todo WHERE id = @todoId`
+func (store *PostgresStore) RemoveTodo(todoId int) (*todo.Todo, error) {
+	query := `DELETE FROM todo WHERE id = @todoId RETURNING *`
 
 	args := pgx.NamedArgs{
 		"todoId": todoId,
 	}
 
-	deleteResponse, err := store.db.Exec(context.Background(), query, args)
+	rows := store.db.QueryRow(context.Background(), query, args)
+	removedTodo, removeScanErr := todo.ScanTodo(rows)
 
-	if err != nil {
-		return err
+	if removeScanErr != nil {
+		return nil, removeScanErr
 	}
 
-	if deleteResponse.RowsAffected() == 0 {
-		return errors.New("couldn't delete")
-	}
-
-	return nil
+	return removedTodo, nil
 }
