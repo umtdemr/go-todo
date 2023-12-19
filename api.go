@@ -142,13 +142,13 @@ func (s *APIServer) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbErr := s.repository.UpdateTodo(&updateData)
-	if dbErr != nil {
-		RespondWithError(w, fmt.Sprintf("Error while updating: %s", dbErr), http.StatusBadRequest)
+	updatedTodo, updateErr := s.repository.UpdateTodo(&updateData)
+	if updateErr != nil {
+		RespondWithError(w, fmt.Sprintf("Error while updating: %s", updateErr), http.StatusBadRequest)
 		return
 	}
 
-	Respond(w, updateData)
+	Respond(w, updatedTodo)
 }
 
 func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
