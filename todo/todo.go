@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"github.com/jackc/pgx/v5"
 	"time"
 )
 
@@ -24,6 +25,16 @@ type UpdateTodoData struct {
 
 type DeleteTodoData struct {
 	Id *string `json:"id,omitempty"`
+}
+
+func ScanTodo(row pgx.Row) (*Todo, error) {
+	var t *Todo
+	t = new(Todo) // initialize it since we need to pass values into a pointer
+	err := row.Scan(&t.Id, &t.Title, &t.Done, &t.CreatedAt, &t.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
 func NewTodo(title string) *Todo {

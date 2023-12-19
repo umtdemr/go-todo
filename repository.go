@@ -54,15 +54,13 @@ func (store *PostgresStore) CreateTodo(data *todo.Todo) (*todo.Todo, error) {
 		"title": data.Title,
 	}
 
-	var t *todo.Todo
-	t = new(todo.Todo)
 	rows := store.db.QueryRow(context.Background(), query, args)
-	err := rows.Scan(&t.Id, &t.Title, &t.Done, &t.CreatedAt, &t.UpdatedAt)
-	if err != nil {
-		return nil, err
+	createdTodo, scanErr := todo.ScanTodo(rows)
+	if scanErr != nil {
+		return nil, scanErr
 	}
 
-	return t, nil
+	return createdTodo, nil
 }
 
 func (store *PostgresStore) GetAllTodos() ([]todo.Todo, error) {
