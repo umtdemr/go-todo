@@ -6,6 +6,7 @@ import (
 	"github.com/umtdemr/go-todo/todo"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -160,10 +161,15 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 		RespondWithError(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	// todoId := parts[1]
+	todoId, parseErr := strconv.Atoi(parts[1])
+
+	if parseErr != nil {
+		RespondWithError(w, "need and integer value as id", http.StatusBadRequest)
+		return
+	}
 
 	if r.Method == http.MethodDelete {
-		err := s.repository.RemoveTodo(1)
+		err := s.repository.RemoveTodo(todoId)
 		if err != nil {
 			RespondWithError(w, err.Error(), http.StatusBadRequest)
 			return
@@ -174,8 +180,7 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	} else {
-
-		fetchedTodo, err := s.repository.GetTodo(1)
+		fetchedTodo, err := s.repository.GetTodo(todoId)
 		if err != nil {
 			RespondWithError(w, err.Error(), http.StatusBadRequest)
 			return
