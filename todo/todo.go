@@ -17,7 +17,7 @@ type CreateTodoData struct {
 }
 
 type UpdateTodoData struct {
-	Id    string  `json:"id"`
+	Id    *int    `json:"id,omitempty"`
 	Title *string `json:"title,omitempty"`
 	Done  *bool   `json:"done,omitempty"`
 }

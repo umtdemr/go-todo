@@ -5,6 +5,8 @@ A basic REST API for todo app without using database
 ## Run
 
 * Clone the repo
+* Create .env file
+* Set postgres database URL with postgres variable in env file 
 * Run go build
 * Run ./go-todo (linux & mac
 * Go to [http://127.0.0.1](http://127.0.0.1)
@@ -24,5 +26,5 @@ A basic REST API for todo app without using database
 ## Roadmap
 
 1. Todo REST API without DB ✅
-2. Todo REST API with PostgreSQL
+2. Todo REST API with PostgreSQL ✅
 3. Todo REST API with Auth
