@@ -11,7 +11,7 @@ import (
 )
 
 type Repository interface {
-	CreateTodo(data *todo.Todo) error
+	CreateTodo(data *todo.Todo) (*todo.Todo, error)
 	GetAllTodos() ([]todo.Todo, error)
 	GetTodo(todoId int) (*todo.Todo, error)
 	UpdateTodo(data *todo.UpdateTodoData) error
@@ -48,15 +48,21 @@ func (store *PostgresStore) CreateTodoTable() error {
 	return err
 }
 
-func (store *PostgresStore) CreateTodo(data *todo.Todo) error {
-	query := `INSERT INTO todo(title) VALUES (@title)`
+func (store *PostgresStore) CreateTodo(data *todo.Todo) (*todo.Todo, error) {
+	query := `INSERT INTO todo(title) VALUES (@title) RETURNING *`
 	args := pgx.NamedArgs{
 		"title": data.Title,
 	}
 
-	_, err := store.db.Exec(context.Background(), query, args)
+	var t *todo.Todo
+	t = new(todo.Todo)
+	rows := store.db.QueryRow(context.Background(), query, args)
+	err := rows.Scan(&t.Id, &t.Title, &t.Done, &t.CreatedAt, &t.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	return t, nil
 }
 
 func (store *PostgresStore) GetAllTodos() ([]todo.Todo, error) {

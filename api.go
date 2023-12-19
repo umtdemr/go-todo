@@ -111,8 +111,8 @@ func (s *APIServer) handleAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdTodo := todo.NewTodo(createTodoType.Title)
-	createErr := s.repository.CreateTodo(createdTodo)
+	createTodoData := todo.NewTodo(createTodoType.Title)
+	createdTodo, createErr := s.repository.CreateTodo(createTodoData)
 	if createErr != nil {
 		fmt.Fprintf(os.Stderr, "error while generating the todo: %s\n", createErr)
 	}
