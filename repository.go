@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/umtdemr/go-todo/todo"
 	"strings"
+	"time"
 )
 
 type Repository interface {
@@ -91,26 +93,38 @@ func (store *PostgresStore) UpdateTodo(data *todo.UpdateTodoData) error {
 	var updates []string
 	var args []interface{}
 
+	if data.Title == nil && data.Done == nil {
+		return errors.New("no field is provided")
+	}
+
 	if data.Title != nil {
 		updates = append(updates, "title = $1")
 		args = append(args, data.Title)
 	}
 
 	if data.Done != nil {
-		updates = append(updates, fmt.Sprintln("done = $%d", len(args)+1))
+		updates = append(updates, fmt.Sprintf("done = $%d", len(args)+1))
 		args = append(args, data.Done)
 	}
 
 	updateBuilder.WriteString(strings.Join(updates, ", "))
+	updateBuilder.WriteString(",") // Add space before update
+
+	updateBuilder.WriteString(fmt.Sprintf("updated_at = $%d", len(args)+1))
+	args = append(args, time.Now())
 	updateBuilder.WriteString(" ") // Add space before WHERE clause
 
 	updateBuilder.WriteString(fmt.Sprintf("WHERE id = %d", *data.Id))
 
-	fmt.Println(updateBuilder.String(), args)
+	updateResponse, err := store.db.Exec(context.Background(), updateBuilder.String(), args...)
 
-	iii, err := store.db.Exec(context.Background(), updateBuilder.String(), args...)
+	if err != nil {
+		return err
+	}
 
-	fmt.Println(iii)
+	if updateResponse.RowsAffected() == 0 {
+		return errors.New("couldn't update")
+	}
 
-	return err
+	return nil
 }
