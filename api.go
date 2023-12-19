@@ -178,7 +178,9 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 		fetchedTodo, err := s.repository.GetTodo(1)
 		if err != nil {
 			RespondWithError(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 		Respond(w, fetchedTodo)
+		return
 	}
 }
