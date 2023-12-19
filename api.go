@@ -6,6 +6,7 @@ import (
 	"github.com/umtdemr/go-todo/todo"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -22,7 +23,7 @@ func (s *APIServer) Run() {
 	http.HandleFunc("/list", s.handleList)
 	http.HandleFunc("/create", s.handleAdd)
 	http.HandleFunc("/update", s.handleUpdate)
-	//http.HandleFunc("/", handleFetchAndDelete)
+	http.HandleFunc("/", s.handleFetchAndDelete)
 	http.ListenAndServe(s.listenAddr, nil)
 }
 
@@ -148,7 +149,7 @@ func (s *APIServer) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	Respond(w, updateData)
 }
 
-/*func handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
+func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodDelete {
 		RespondWithError(w, "Only GET and DELETE requests are allowed", http.StatusBadRequest)
 		return
@@ -159,33 +160,16 @@ func (s *APIServer) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		RespondWithError(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	todoId := parts[1]
-
-	parsedTodoId, parseUuidErr := uuid.Parse(todoId)
-
-	if parseUuidErr != nil {
-		RespondWithError(w, "the id you sent is invalid", http.StatusBadRequest)
-		return
-	}
-
-	db.mutex.Lock()
-	todoIndex := slices.IndexFunc(*db.Todos, func(c *todo.Todo) bool { return c.Id == parsedTodoId })
-	if todoIndex == -1 {
-		RespondWithError(w, "We couldn't find the todo you are searching for", http.StatusBadRequest)
-		return
-	}
+	// todoId := parts[1]
 
 	if r.Method == http.MethodDelete {
-		nextId := todoIndex + 1
-		if len(*db.Todos)-1 > nextId {
-			nextId = len(*db.Todos) - 1
-		}
-		*(db.Todos) = slices.Delete(*db.Todos, todoIndex, nextId)
-		db.mutex.Unlock()
-		Respond(w, (*db.Todos)[todoIndex])
+		RespondWithError(w, "not implemented yed", http.StatusBadRequest)
 	} else {
-		db.mutex.Unlock()
-		Respond(w, (*db.Todos)[todoIndex])
+
+		fetchedTodo, err := s.repository.GetTodo(1)
+		if err != nil {
+			RespondWithError(w, err.Error(), http.StatusBadRequest)
+		}
+		Respond(w, fetchedTodo)
 	}
 }
-*/

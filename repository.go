@@ -13,6 +13,7 @@ import (
 type Repository interface {
 	CreateTodo(data *todo.Todo) error
 	GetAllTodos() ([]todo.Todo, error)
+	GetTodo(todoId int) (*todo.Todo, error)
 	UpdateTodo(data *todo.UpdateTodoData) error
 }
 
@@ -127,4 +128,19 @@ func (store *PostgresStore) UpdateTodo(data *todo.UpdateTodoData) error {
 	}
 
 	return nil
+}
+
+func (store *PostgresStore) GetTodo(todoId int) (*todo.Todo, error) {
+	query := fmt.Sprintf(`SELECT * FROM todo WHERE id = %d`, todoId)
+
+	var singleTodo *todo.Todo
+	singleTodo = new(todo.Todo)
+	row := store.db.QueryRow(context.Background(), query)
+
+	err := row.Scan(&singleTodo.Id, &singleTodo.Title, &singleTodo.Done, &singleTodo.CreatedAt, &singleTodo.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return singleTodo, nil
 }
