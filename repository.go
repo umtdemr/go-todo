@@ -15,6 +15,7 @@ type Repository interface {
 	GetAllTodos() ([]todo.Todo, error)
 	GetTodo(todoId int) (*todo.Todo, error)
 	UpdateTodo(data *todo.UpdateTodoData) error
+	RemoveTodo(todoId int) error
 }
 
 type PostgresStore struct {
@@ -143,4 +144,24 @@ func (store *PostgresStore) GetTodo(todoId int) (*todo.Todo, error) {
 	}
 
 	return singleTodo, nil
+}
+
+func (store *PostgresStore) RemoveTodo(todoId int) error {
+	query := `DELETE FROM todo WHERE id = @todoId`
+
+	args := pgx.NamedArgs{
+		"todoId": todoId,
+	}
+
+	deleteResponse, err := store.db.Exec(context.Background(), query, args)
+
+	if err != nil {
+		return err
+	}
+
+	if deleteResponse.RowsAffected() == 0 {
+		return errors.New("couldn't delete")
+	}
+
+	return nil
 }

@@ -163,7 +163,16 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 	// todoId := parts[1]
 
 	if r.Method == http.MethodDelete {
-		RespondWithError(w, "not implemented yed", http.StatusBadRequest)
+		err := s.repository.RemoveTodo(1)
+		if err != nil {
+			RespondWithError(w, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			messageMap := make(map[string]string)
+			messageMap["message"] = "removed"
+			Respond(w, messageMap)
+			return
+		}
 	} else {
 
 		fetchedTodo, err := s.repository.GetTodo(1)
