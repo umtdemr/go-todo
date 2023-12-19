@@ -171,14 +171,12 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 	}
 
 	if r.Method == http.MethodDelete {
-		err := s.repository.RemoveTodo(todoIdInt)
-		if err != nil {
-			RespondWithError(w, err.Error(), http.StatusBadRequest)
+		removedTodo, removeErr := s.repository.RemoveTodo(todoIdInt)
+		if removeErr != nil {
+			RespondWithError(w, removeErr.Error(), http.StatusBadRequest)
 			return
 		} else {
-			messageMap := make(map[string]string)
-			messageMap["message"] = "removed"
-			Respond(w, messageMap)
+			Respond(w, removedTodo)
 			return
 		}
 	} else {
