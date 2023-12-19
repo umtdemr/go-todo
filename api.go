@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/umtdemr/go-todo/todo"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -21,11 +21,12 @@ func NewAPIServer(listenAddr string, repository Repository) *APIServer {
 }
 
 func (s *APIServer) Run() {
-	http.HandleFunc("/list", s.handleList)
-	http.HandleFunc("/create", s.handleAdd)
-	http.HandleFunc("/update", s.handleUpdate)
-	http.HandleFunc("/", s.handleFetchAndDelete)
-	http.ListenAndServe(s.listenAddr, nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/list", s.handleList)
+	r.HandleFunc("/create", s.handleAdd)
+	r.HandleFunc("/update", s.handleUpdate)
+	r.HandleFunc("/{id}", s.handleFetchAndDelete)
+	http.ListenAndServe(s.listenAddr, r)
 }
 
 func Respond(w http.ResponseWriter, data interface{}) {
@@ -156,12 +157,13 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 2 {
-		RespondWithError(w, "Invalid request", http.StatusBadRequest)
+	pathVars := mux.Vars(r)
+	todoId, ok := pathVars["id"]
+	if !ok {
+		RespondWithError(w, "couldn't find the id", http.StatusBadRequest)
 		return
 	}
-	todoId, parseErr := strconv.Atoi(parts[1])
+	todoIdInt, parseErr := strconv.Atoi(todoId)
 
 	if parseErr != nil {
 		RespondWithError(w, "need and integer value as id", http.StatusBadRequest)
@@ -169,7 +171,7 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 	}
 
 	if r.Method == http.MethodDelete {
-		err := s.repository.RemoveTodo(todoId)
+		err := s.repository.RemoveTodo(todoIdInt)
 		if err != nil {
 			RespondWithError(w, err.Error(), http.StatusBadRequest)
 			return
@@ -180,7 +182,7 @@ func (s *APIServer) handleFetchAndDelete(w http.ResponseWriter, r *http.Request)
 			return
 		}
 	} else {
-		fetchedTodo, err := s.repository.GetTodo(todoId)
+		fetchedTodo, err := s.repository.GetTodo(todoIdInt)
 		if err != nil {
 			RespondWithError(w, err.Error(), http.StatusBadRequest)
 			return
