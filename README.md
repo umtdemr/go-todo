@@ -1,6 +1,6 @@
 # Todo REST API without DB
 
-A basic REST API for todo app without using database
+A basic REST API for todo app with PostgreSQL
 
 ## Run
 
