@@ -14,17 +14,18 @@ A basic REST API for todo app with PostgreSQL
 
 ## API Endpoints
 
-| URL     | METHOD | Description                                    |
-|---------|--------|------------------------------------------------|
-| /list   | GET    | Fetch all the todos                            |
-| /:id    | GET    | Fetch single todo                              |
-| /:id    | DELETE | Delete a todo                                  |
-| /create | POST   | Creates a todo item with the given title prop  |
-| /update | POST   | Updates a todo either with title or done props |
+| URL          | METHOD | Description                                    |
+|--------------|--------|------------------------------------------------|
+| /todo/       | GET    | Fetch all the todos                            |
+| /todo/list   | GET    | Fetch all the todos                            |
+| /todo/:id    | GET    | Fetch single todo                              |
+| /todo/:id    | DELETE | Delete a todo                                  |
+| /todo/create | POST   | Creates a todo item with the given title prop  |
+| /todo/update | POST   | Updates a todo either with title or done props |
 
 
 ## Roadmap
 
 1. Todo REST API without DB ✅
 2. Todo REST API with PostgreSQL ✅
-3. Todo REST API with Auth
+3. Todo REST API with Auth (in progress)

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
+	"github.com/umtdemr/go-todo/server"
+	"github.com/umtdemr/go-todo/todo"
 	"os"
 )
 
@@ -17,13 +19,18 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error while connecting to db: %v\n", err)
 		os.Exit(1)
 	}
-	defer store.db.Close(context.Background())
+	defer store.DB.Close(context.Background())
 
-	if initErr := store.Init(); initErr != nil {
+	apiServer := server.NewAPIServer(":8080")
+
+	todoRepository, err := todo.NewTodoRepository(store.DB)
+
+	if initErr := todoRepository.Init(); initErr != nil {
 		fmt.Printf("Error in init: %s\n", initErr)
 		os.Exit(1)
 	}
+	todoAPIRoute := todo.NewTodoAPIRoute(*todoRepository)
+	todoAPIRoute.RegisterRoutes(apiServer.Router)
 
-	server := NewAPIServer(":8080", store)
-	server.Run()
+	apiServer.Run()
 }
