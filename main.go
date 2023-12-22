@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/umtdemr/go-todo/server"
 	"github.com/umtdemr/go-todo/todo"
+	"github.com/umtdemr/go-todo/user"
 	"os"
 )
 
@@ -25,10 +26,18 @@ func main() {
 
 	todoRepository, err := todo.NewTodoRepository(store.DB)
 
-	if initErr := todoRepository.Init(); initErr != nil {
-		fmt.Printf("Error in init: %s\n", initErr)
+	if todoRepoInitErr := todoRepository.Init(); todoRepoInitErr != nil {
+		fmt.Printf("Error in init: %s\n", todoRepoInitErr)
 		os.Exit(1)
 	}
+
+	userRepository, err := user.NewUserRepository(store.DB)
+
+	if userRepoInitErr := userRepository.Init(); userRepoInitErr != nil {
+		fmt.Printf("Error in init: %s\n", userRepoInitErr)
+		os.Exit(1)
+	}
+
 	todoAPIRoute := todo.NewTodoAPIRoute(*todoRepository)
 	todoAPIRoute.RegisterRoutes(apiServer.Router)
 
