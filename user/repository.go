@@ -6,6 +6,7 @@ import (
 )
 
 type IRepository interface {
+	CreateUser(data *CreateUserData) error
 }
 
 type Repository struct {
@@ -25,9 +26,23 @@ func (repository *Repository) CreateUserTable() error {
 		username varchar(20) NOT NULL,
 		password text NOT NULL,
 		email varchar(255) NOT NULL,
-		created_at timestamp DEFAULT now()
+		created_at timestamp DEFAULT now(),
+		is_active bool DEFAULT true,
+		is_verified bool DEFAULT false
 	)`
 
 	_, err := repository.db.Exec(context.Background(), query)
+	return err
+}
+
+func (repository *Repository) CreateUser(data *CreateUserData) error {
+	query := `INSERT INTO "user" (username, password, email) VALUES (@username, @password, @email)`
+	args := pgx.NamedArgs{
+		"username": data.Username,
+		"password": data.Password,
+		"email":    data.Email,
+	}
+
+	_, err := repository.db.Exec(context.Background(), query, query, args)
 	return err
 }

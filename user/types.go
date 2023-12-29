@@ -10,3 +10,9 @@ type DBModel struct {
 	IsActive  bool
 	CreatedAt time.Time
 }
+
+type CreateUserData struct {
+	Username string
+	Password string
+	Email    string
+}
