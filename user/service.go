@@ -11,7 +11,7 @@ func NewUserService(repo IRepository) *Service {
 }
 
 func (service *Service) CreateUser(data *CreateUserData) error {
-	if len(data.Username) < 3 || len(data.Username) > 20 {
+	if userNameLength := len(data.Username); userNameLength < 3 || userNameLength > 20 {
 		return ErrorUsernameLength
 	}
 
@@ -20,7 +20,7 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 		return ErrorUserNameNotValid
 	}
 
-	if len(data.Email) < 6 && len(data.Email) > 255 {
+	if emailLength := len(data.Email); emailLength < 6 || emailLength > 255 {
 		return ErrorEmailLength
 	}
 
@@ -28,6 +28,10 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 
 	if !emailRegex.MatchString(data.Email) {
 		return ErrorEmailNotValid
+	}
+
+	if passwordLength := len(data.Password); passwordLength < 8 || passwordLength > 64 {
+		return ErrorPasswordLength
 	}
 
 	return service.repository.CreateUser(data)
