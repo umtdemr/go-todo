@@ -9,20 +9,20 @@ import (
 )
 
 type APIRoute struct {
-	Route      string
-	Repository Repository
+	Route   string
+	Service Service
 }
 
-func NewAPIRoute(repository Repository) *APIRoute {
-	return &APIRoute{Route: "user", Repository: repository}
+func NewAPIRoute(userService Service) *APIRoute {
+	return &APIRoute{Route: "user", Service: userService}
 }
 
-func (s *APIRoute) RegisterAPIRoutes(r *mux.Router) {
-	r.HandleFunc("/user/register", s.handleCreateUser)
-	r.HandleFunc("/user/login", s.handleLogin)
+func (route *APIRoute) RegisterAPIRoutes(router *mux.Router) {
+	router.HandleFunc("/user/register", route.handleCreateUser)
+	router.HandleFunc("/user/login", route.handleLogin)
 }
 
-func (s *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		server.RespondWithError(w, "only post requests are allowed", http.StatusBadRequest)
 		return
@@ -38,7 +38,7 @@ func (s *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createErr := s.Repository.CreateUser(&userCreateData)
+	createErr := route.Service.CreateUser(&userCreateData)
 	if createErr != nil {
 		server.RespondWithError(w, fmt.Sprintf("error while creating user: %v", createErr), http.StatusBadRequest)
 		return
@@ -50,7 +50,7 @@ func (s *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (s *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
+func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		server.RespondWithError(w, "only post requests are allowed", http.StatusBadRequest)
 		return
@@ -67,7 +67,7 @@ func (s *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isLoggedIn := s.Repository.Login(&userLoginData)
+	isLoggedIn := route.Service.Login(&userLoginData)
 	response := make(map[string]string)
 	message := "username or password is invalid"
 	if isLoggedIn {
