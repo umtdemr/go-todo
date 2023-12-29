@@ -36,13 +36,13 @@ func (repository *Repository) CreateUserTable() error {
 }
 
 func (repository *Repository) CreateUser(data *CreateUserData) error {
-	query := `INSERT INTO "user" (username, password, email) VALUES (@username, @password, @email)`
+	query := `INSERT INTO "user"(username, password, email) VALUES (@username, @password, @email)`
 	args := pgx.NamedArgs{
 		"username": data.Username,
 		"password": data.Password,
 		"email":    data.Email,
 	}
 
-	_, err := repository.db.Exec(context.Background(), query, query, args)
+	_, err := repository.db.Exec(context.Background(), query, args)
 	return err
 }
