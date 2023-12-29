@@ -62,6 +62,14 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 	return service.repository.CreateUser(data)
 }
 
-func (service *Service) Login(data *LoginUserData) bool {
-	return service.repository.Login(data)
+func (service *Service) Login(data *LoginUserData) (bool, error) {
+	if data.Password == nil {
+		return false, ErrorPasswordLength
+	}
+
+	if data.Username == nil && data.Email == nil {
+		return false, ErrorLoginIdEmpty
+	}
+
+	return service.repository.Login(data), nil
 }

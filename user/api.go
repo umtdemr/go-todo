@@ -67,13 +67,18 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	decodeErr := decoder.Decode(&userLoginData)
-	if decodeErr != nil ||
-		(userLoginData.Password == nil || (userLoginData.Email == nil && userLoginData.Username == nil)) {
-		server.RespondWithError(w, "make sure you provided all the necessary values", http.StatusBadRequest)
+	if decodeErr != nil {
+		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
 		return
 	}
 
-	isLoggedIn := route.Service.Login(&userLoginData)
+	isLoggedIn, loginError := route.Service.Login(&userLoginData)
+
+	if loginError != nil {
+		server.RespondWithError(w, loginError.Error(), http.StatusBadRequest)
+		return
+	}
+
 	response := make(map[string]string)
 	message := "username or password is invalid"
 	if isLoggedIn {

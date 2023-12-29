@@ -10,6 +10,7 @@ const (
 	lengthEmail
 	emailNotValid
 	lengthPassword
+	loginIdEmpty // in case username and email is empty
 )
 
 type UserError struct {
@@ -33,6 +34,8 @@ func (e UserError) Error() string {
 		return "email is not valid"
 	case lengthPassword:
 		return "password length should be between 8 and 64"
+	case loginIdEmpty:
+		return "username or email need to be sent"
 	}
 	return "error in user"
 }
@@ -44,4 +47,5 @@ var (
 	ErrorEmailLength                = UserError{kind: lengthEmail, fields: []string{"email"}}
 	ErrorEmailNotValid              = UserError{kind: emailNotValid, fields: []string{"email"}}
 	ErrorPasswordLength             = UserError{kind: lengthPassword, fields: []string{"password"}}
+	ErrorLoginIdEmpty               = UserError{kind: loginIdEmpty, fields: []string{"username", "email"}}
 )
