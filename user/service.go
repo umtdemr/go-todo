@@ -1,6 +1,10 @@
 package user
 
-import "regexp"
+import (
+	"errors"
+	"github.com/alexedwards/argon2id"
+	"regexp"
+)
 
 type Service struct {
 	repository IRepository
@@ -33,6 +37,14 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 	if passwordLength := len(data.Password); passwordLength < 8 || passwordLength > 64 {
 		return ErrorPasswordLength
 	}
+
+	// hash password to secure
+	hash, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams)
+	if err != nil {
+		return errors.New("error while hashing the password")
+	}
+
+	data.Password = hash
 
 	return service.repository.CreateUser(data)
 }
