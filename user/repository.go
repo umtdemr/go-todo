@@ -9,6 +9,8 @@ import (
 type IRepository interface {
 	CreateUser(data *CreateUserData) error
 	Login(data *LoginUserData) bool
+	GetUserByUsername(username string) *VisibleUser
+	GetUserByEmail(email string) *VisibleUser
 }
 
 type Repository struct {
@@ -65,7 +67,7 @@ func (repository *Repository) Login(data *LoginUserData) bool {
 		"password":      *data.Password,
 	}
 
-	var loggedInUser LoggedInUserData
+	var loggedInUser VisibleUser
 	queryRow := repository.db.QueryRow(context.Background(), query, args)
 
 	err := queryRow.Scan(&loggedInUser.Id, &loggedInUser.Username, &loggedInUser.Email, &loggedInUser.CreatedAt)
@@ -74,4 +76,36 @@ func (repository *Repository) Login(data *LoginUserData) bool {
 	}
 
 	return true
+}
+
+func (repository *Repository) GetUserByUsername(username string) *VisibleUser {
+	var user VisibleUser
+
+	query := `SELECT id, username, email, created_at FROM "user" WHERE username=@username`
+	args := pgx.NamedArgs{"username": username}
+
+	queryRow := repository.db.QueryRow(context.Background(), query, args)
+
+	err := queryRow.Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt)
+	if err != nil {
+		return nil
+	}
+
+	return &user
+}
+
+func (repository *Repository) GetUserByEmail(email string) *VisibleUser {
+	var user VisibleUser
+
+	query := `SELECT id, username, email, created_at FROM "user" WHERE email=@email`
+	args := pgx.NamedArgs{"email": email}
+
+	queryRow := repository.db.QueryRow(context.Background(), query, args)
+
+	err := queryRow.Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt)
+	if err != nil {
+		return nil
+	}
+
+	return &user
 }

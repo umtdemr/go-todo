@@ -15,13 +15,14 @@ func NewUserService(repo IRepository) *Service {
 }
 
 func (service *Service) CreateUser(data *CreateUserData) error {
+	// validate username, email and password
 	if userNameLength := len(data.Username); userNameLength < 3 || userNameLength > 20 {
 		return ErrorUsernameLength
 	}
 
 	userNameRegex := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 	if !userNameRegex.MatchString(data.Username) {
-		return ErrorUserNameNotValid
+		return ErrorUserNameNotValidCharacters
 	}
 
 	if emailLength := len(data.Email); emailLength < 6 || emailLength > 255 {
@@ -36,6 +37,18 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 
 	if passwordLength := len(data.Password); passwordLength < 8 || passwordLength > 64 {
 		return ErrorPasswordLength
+	}
+
+	// check if the username exists
+	userWithUsername := service.repository.GetUserByUsername(data.Username)
+	if userWithUsername != nil {
+		return ErrorUserNameNotValid
+	}
+
+	// check if the email exists
+	userWithEmail := service.repository.GetUserByEmail(data.Email)
+	if userWithEmail != nil {
+		return ErrorEmailNotValid
 	}
 
 	// hash password to secure

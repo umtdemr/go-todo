@@ -5,6 +5,7 @@ type errKind int
 const (
 	_ errKind = iota
 	lengthUsername
+	userNameNotValidCharacters
 	userNameNotValid
 	lengthEmail
 	emailNotValid
@@ -22,8 +23,10 @@ func (e UserError) Error() string {
 	switch e.kind {
 	case lengthUsername:
 		return "username length should be between 3 and 30"
-	case userNameNotValid:
+	case userNameNotValidCharacters:
 		return "username shouldn't include special characters"
+	case userNameNotValid:
+		return "username is not valid"
 	case lengthEmail:
 		return "email length should be between 6 and 255"
 	case emailNotValid:
@@ -35,9 +38,10 @@ func (e UserError) Error() string {
 }
 
 var (
-	ErrorUsernameLength   = UserError{kind: lengthUsername, fields: []string{"username"}}
-	ErrorUserNameNotValid = UserError{kind: userNameNotValid, fields: []string{"username"}}
-	ErrorEmailLength      = UserError{kind: lengthEmail, fields: []string{"email"}}
-	ErrorEmailNotValid    = UserError{kind: emailNotValid, fields: []string{"email"}}
-	ErrorPasswordLength   = UserError{kind: lengthPassword, fields: []string{"password"}}
+	ErrorUsernameLength             = UserError{kind: lengthUsername, fields: []string{"username"}}
+	ErrorUserNameNotValidCharacters = UserError{kind: userNameNotValidCharacters, fields: []string{"username"}}
+	ErrorUserNameNotValid           = UserError{kind: userNameNotValid, fields: []string{"username"}}
+	ErrorEmailLength                = UserError{kind: lengthEmail, fields: []string{"email"}}
+	ErrorEmailNotValid              = UserError{kind: emailNotValid, fields: []string{"email"}}
+	ErrorPasswordLength             = UserError{kind: lengthPassword, fields: []string{"password"}}
 )
