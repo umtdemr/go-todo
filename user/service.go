@@ -71,5 +71,13 @@ func (service *Service) Login(data *LoginUserData) (bool, error) {
 		return false, ErrorLoginIdEmpty
 	}
 
-	return service.repository.Login(data), nil
+	user, userQueryErr := service.repository.GetUserWithAllParams(data)
+
+	if userQueryErr != nil {
+		return false, userQueryErr
+	}
+
+	isPassMatched, hashErr := argon2id.ComparePasswordAndHash(*data.Password, user.Password)
+
+	return isPassMatched, hashErr
 }
