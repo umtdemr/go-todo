@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/umtdemr/go-todo/server"
@@ -40,6 +41,11 @@ func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) 
 
 	createErr := route.Service.CreateUser(&userCreateData)
 	if createErr != nil {
+		var e UserError
+		if errors.As(createErr, &e) {
+			server.RespondWithError(w, fmt.Sprintf("validation error: %v", e.Error()), http.StatusBadRequest)
+			return
+		}
 		server.RespondWithError(w, fmt.Sprintf("error while creating user: %v", createErr), http.StatusBadRequest)
 		return
 	}

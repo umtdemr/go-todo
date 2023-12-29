@@ -9,6 +9,9 @@ func NewUserService(repo IRepository) *Service {
 }
 
 func (service *Service) CreateUser(data *CreateUserData) error {
+	if len(data.Username) < 3 || len(data.Username) > 20 {
+		return ErrorUsernameLength
+	}
 	return service.repository.CreateUser(data)
 }
 
