@@ -23,7 +23,7 @@ type LoginUserData struct {
 	Email    *string `json:"email,omitempty"`
 }
 
-type LoggedInUserData struct {
+type VisibleUser struct {
 	Id        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
