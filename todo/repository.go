@@ -30,9 +30,10 @@ func (store *Repository) Init() error {
 }
 
 func (store *Repository) CreateTodoTable() error {
-	query := `CREATE TABLE IF NOT EXISTS todo(
+	query := `CREATE TABLE IF NOT EXISTS "todo" (
 		id serial PRIMARY KEY,
-		title varchar(255),
+		user_id integer NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+		title varchar(255) NOT NULL,
 		done boolean DEFAULT false,
 		created_at timestamp DEFAULT now(),
 		updated_at timestamp DEFAULT now()

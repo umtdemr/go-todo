@@ -12,12 +12,12 @@ import (
 )
 
 type APIRoute struct {
-	Route      string
-	Repository Repository
+	Route   string
+	Service Service
 }
 
-func NewTodoAPIRoute(repository Repository) *APIRoute {
-	return &APIRoute{Route: "todo", Repository: repository}
+func NewTodoAPIRoute(service Service) *APIRoute {
+	return &APIRoute{Route: "todo", Service: service}
 }
 
 func (s *APIRoute) RegisterRoutes(router *mux.Router) {

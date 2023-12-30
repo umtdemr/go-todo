@@ -22,7 +22,12 @@ func main() {
 	}
 	defer store.DB.Close(context.Background())
 
-	apiServer := server.NewAPIServer(":8080")
+	userRepository, err := user.NewUserRepository(store.DB)
+
+	if userRepoInitErr := userRepository.Init(); userRepoInitErr != nil {
+		fmt.Printf("Error in init: %s\n", userRepoInitErr)
+		os.Exit(1)
+	}
 
 	todoRepository, err := todo.NewTodoRepository(store.DB)
 
@@ -31,19 +36,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	userRepository, err := user.NewUserRepository(store.DB)
-
-	if userRepoInitErr := userRepository.Init(); userRepoInitErr != nil {
-		fmt.Printf("Error in init: %s\n", userRepoInitErr)
-		os.Exit(1)
-	}
-
-	todoAPIRoute := todo.NewTodoAPIRoute(*todoRepository)
-	todoAPIRoute.RegisterRoutes(apiServer.Router)
+	apiServer := server.NewAPIServer(":8080")
 
 	userService := user.NewUserService(userRepository)
 	userAPIRoute := user.NewAPIRoute(*userService)
 	userAPIRoute.RegisterAPIRoutes(apiServer.Router)
+
+	todoService := todo.NewTodoService(todoRepository)
+	todoAPIRoute := todo.NewTodoAPIRoute(*todoRepository)
+	todoAPIRoute.RegisterRoutes(apiServer.Router)
 
 	apiServer.Run()
 }
