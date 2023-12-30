@@ -72,7 +72,7 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isLoggedIn, loginError := route.Service.Login(&userLoginData)
+	tokenString, loginError := route.Service.Login(&userLoginData)
 
 	if loginError != nil {
 		server.RespondWithError(w, loginError.Error(), http.StatusBadRequest)
@@ -80,10 +80,7 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := make(map[string]string)
-	message := "username or password is invalid"
-	if isLoggedIn {
-		message = "successfully logged in"
-	}
-	response["message"] = message
+	response["message"] = "success"
+	response["token"] = tokenString
 	server.Respond(w, response)
 }
