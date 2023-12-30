@@ -43,7 +43,7 @@ func main() {
 	userAPIRoute.RegisterAPIRoutes(apiServer.Router)
 
 	todoService := todo.NewTodoService(todoRepository)
-	todoAPIRoute := todo.NewTodoAPIRoute(*todoRepository)
+	todoAPIRoute := todo.NewTodoAPIRoute(todoService)
 	todoAPIRoute.RegisterRoutes(apiServer.Router)
 
 	apiServer.Run()
