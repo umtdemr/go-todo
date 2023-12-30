@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"github.com/umtdemr/go-todo/server"
 	"net/http"
 	"strings"
@@ -22,18 +23,19 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 
 		jwtString := strings.TrimPrefix(tokenString, "Bearer ")
 
-		isTokenValid, validationErr := ValidateJWT(jwtString)
+		username, validationErr := ValidateJWT(jwtString)
 
 		if validationErr != nil {
 			server.RespondWithError(w, validationErr.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		if !isTokenValid {
+		if username == "" {
 			server.RespondWithError(w, "token is not valid", http.StatusUnauthorized)
 			return
 		}
 
-		handler.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "username", username)
+		handler.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
