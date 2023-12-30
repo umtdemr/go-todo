@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"github.com/alexedwards/argon2id"
+	"github.com/jackc/pgx/v5"
 	"regexp"
 )
 
@@ -62,6 +63,40 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 	return service.repository.CreateUser(data)
 }
 
-func (service *Service) Login(data *LoginUserData) bool {
-	return service.repository.Login(data)
+func (service *Service) Login(data *LoginUserData) (string, error) {
+	if data.Password == nil {
+		return "", ErrorPasswordLength
+	}
+
+	if data.Username == nil && data.Email == nil {
+		return "", ErrorLoginIdEmpty
+	}
+
+	user, userQueryErr := service.repository.GetUserWithAllParams(data)
+
+	if userQueryErr != nil {
+		if errors.Is(userQueryErr, pgx.ErrNoRows) {
+			return "", ErrorUsernameOrPasswordIncorrect
+		}
+		return "", userQueryErr
+	}
+
+	isPassMatched, hashErr := argon2id.ComparePasswordAndHash(*data.Password, user.Password)
+
+	if hashErr != nil {
+		return "", hashErr
+	}
+
+	if !isPassMatched {
+		return "", ErrorUsernameOrPasswordIncorrect
+	}
+
+	// if credentials are correct, generate a token
+	tokenString, tokenErr := GenerateNewJWT(user.Username)
+
+	if tokenErr != nil {
+		return "", tokenErr
+	}
+
+	return tokenString, nil
 }

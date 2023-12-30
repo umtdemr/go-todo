@@ -8,7 +8,7 @@ import (
 
 type IRepository interface {
 	CreateUser(data *CreateUserData) error
-	Login(data *LoginUserData) bool
+	GetUserWithAllParams(data *LoginUserData) (*UserParams, error)
 	GetUserByUsername(username string) *VisibleUser
 	GetUserByEmail(email string) *VisibleUser
 }
@@ -51,7 +51,7 @@ func (repository *Repository) CreateUser(data *CreateUserData) error {
 	return err
 }
 
-func (repository *Repository) Login(data *LoginUserData) bool {
+func (repository *Repository) GetUserWithAllParams(data *LoginUserData) (*UserParams, error) {
 	var credentialColumnValue, credentialColumnName string
 	if data.Username != nil {
 		credentialColumnValue = *data.Username
@@ -61,21 +61,31 @@ func (repository *Repository) Login(data *LoginUserData) bool {
 		credentialColumnName = "email"
 	}
 
-	query := fmt.Sprintf(`SELECT id, username, email, created_at FROM "user" WHERE %v=@credentialVal AND password=@password`, credentialColumnName)
+	query := fmt.Sprintf(
+		`SELECT id, username, email, password, is_active, is_verified, created_at FROM "user" WHERE %v=@credentialVal`,
+		credentialColumnName,
+	)
 	args := pgx.NamedArgs{
 		"credentialVal": credentialColumnValue,
-		"password":      *data.Password,
 	}
 
-	var loggedInUser VisibleUser
+	var user UserParams
 	queryRow := repository.db.QueryRow(context.Background(), query, args)
 
-	err := queryRow.Scan(&loggedInUser.Id, &loggedInUser.Username, &loggedInUser.Email, &loggedInUser.CreatedAt)
+	err := queryRow.Scan(
+		&user.Id,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.IsActive,
+		&user.IsVerified,
+		&user.CreatedAt,
+	)
 	if err != nil {
-		return false
+		return nil, err
 	}
 
-	return true
+	return &user, nil
 }
 
 func (repository *Repository) GetUserByUsername(username string) *VisibleUser {
