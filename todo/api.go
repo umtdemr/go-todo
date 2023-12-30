@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/umtdemr/go-todo/server"
+	"github.com/umtdemr/go-todo/user"
 	"net/http"
 	"os"
 	"strconv"
@@ -20,11 +21,11 @@ func NewTodoAPIRoute(repository Repository) *APIRoute {
 }
 
 func (s *APIRoute) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/todo", s.handleList)
-	router.HandleFunc("/todo/list", s.handleList)
-	router.HandleFunc("/todo/create", s.handleAdd)
-	router.HandleFunc("/todo/update", s.handleUpdate)
-	router.HandleFunc("/todo/{id}", s.handleFetchAndDelete)
+	router.Handle("/todo", user.AuthMiddleware(http.HandlerFunc(s.handleList)))
+	router.Handle("/todo/list", user.AuthMiddleware(http.HandlerFunc(s.handleList)))
+	router.Handle("/todo/create", user.AuthMiddleware(http.HandlerFunc(s.handleAdd)))
+	router.Handle("/todo/update", user.AuthMiddleware(http.HandlerFunc(s.handleUpdate)))
+	router.Handle("/todo/{id}", user.AuthMiddleware(http.HandlerFunc(s.handleFetchAndDelete)))
 }
 
 func (s *APIRoute) handleList(w http.ResponseWriter, r *http.Request) {
