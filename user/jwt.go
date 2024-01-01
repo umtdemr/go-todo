@@ -20,7 +20,7 @@ func GenerateNewJWT(username string) (string, error) {
 	return tokenString, err
 }
 
-func ValidateJWT(tokenString string) (bool, error) {
+func ValidateJWT(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected siging method: %v", token.Header["alg"])
@@ -29,23 +29,23 @@ func ValidateJWT(tokenString string) (bool, error) {
 	})
 
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	if !token.Valid {
-		return false, ErrorTokenNotValid
+		return "", ErrorTokenNotValid
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		_, isExpirationExists := claims["exp"] // no need to check if the token expired since it's automatically checked
 		if !isExpirationExists {
-			return false, ErrorTokenNotValid
+			return "", ErrorTokenNotValid
 		}
 
-		_, isUsernameExistsOnMap := claims["username"]
+		username, isUsernameExistsOnMap := claims["username"]
 		if !isUsernameExistsOnMap {
-			return false, ErrorTokenNotValid
+			return "", ErrorTokenNotValid
 		}
 
-		return true, nil
+		return username.(string), nil
 	}
-	return false, ErrorTokenNotValid
+	return "", ErrorTokenNotValid
 }

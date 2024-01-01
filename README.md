@@ -29,3 +29,8 @@ A basic REST API for todo app with PostgreSQL
 1. Todo REST API without DB ✅
 2. Todo REST API with PostgreSQL ✅
 3. Todo REST API with Auth (in progress)
+
+
+## Questions
+
+- Does storing the parsed username from a JWT in the context of a request make sense?
