@@ -10,11 +10,11 @@ import (
 )
 
 type IRepository interface {
-	CreateTodo(data *Todo) (*Todo, error)
-	GetAllTodos() ([]Todo, error)
-	GetTodo(todoId int) (*Todo, error)
-	UpdateTodo(data *UpdateTodoData) (*Todo, error)
-	RemoveTodo(todoId int) (*Todo, error)
+	CreateTodo(data *Todo, userId int64) (*Todo, error)
+	GetAllTodos(userId int64) ([]Todo, error)
+	GetTodo(todoId int, userId int64) (*Todo, error)
+	UpdateTodo(data *UpdateTodoData, userId int64) (*Todo, error)
+	RemoveTodo(todoId int, userId int64) (*Todo, error)
 }
 
 type Repository struct {
@@ -43,10 +43,11 @@ func (store *Repository) CreateTodoTable() error {
 	return err
 }
 
-func (store *Repository) CreateTodo(data *Todo) (*Todo, error) {
-	query := `INSERT INTO todo(title) VALUES (@title) RETURNING *`
+func (store *Repository) CreateTodo(data *Todo, userId int64) (*Todo, error) {
+	query := `INSERT INTO "todo"(title, user_id) VALUES (@title, @userId) RETURNING id, title, done, created_at, updated_at`
 	args := pgx.NamedArgs{
-		"title": data.Title,
+		"title":  data.Title,
+		"userId": userId,
 	}
 
 	rows := store.DB.QueryRow(context.Background(), query, args)
@@ -58,10 +59,11 @@ func (store *Repository) CreateTodo(data *Todo) (*Todo, error) {
 	return createdTodo, nil
 }
 
-func (store *Repository) GetAllTodos() ([]Todo, error) {
-	query := `SELECT * FROM todo`
+func (store *Repository) GetAllTodos(userId int64) ([]Todo, error) {
+	query := `SELECT id, title, done, created_at, updated_at FROM "todo" WHERE user_id=@userId`
+	args := pgx.NamedArgs{"userId": userId}
 
-	rows, err := store.DB.Query(context.Background(), query)
+	rows, err := store.DB.Query(context.Background(), query, args)
 
 	if err != nil {
 		return nil, err
@@ -88,7 +90,7 @@ func (store *Repository) GetAllTodos() ([]Todo, error) {
 	return todos, nil
 }
 
-func (store *Repository) UpdateTodo(data *UpdateTodoData) (*Todo, error) {
+func (store *Repository) UpdateTodo(data *UpdateTodoData, userId int64) (*Todo, error) {
 	var updateBuilder strings.Builder
 	updateBuilder.WriteString("UPDATE todo SET ")
 	var updates []string
@@ -115,7 +117,7 @@ func (store *Repository) UpdateTodo(data *UpdateTodoData) (*Todo, error) {
 	args = append(args, time.Now())
 	updateBuilder.WriteString(" ") // Add space before WHERE clause
 
-	updateBuilder.WriteString(fmt.Sprintf("WHERE id = %d RETURNING *", *data.Id))
+	updateBuilder.WriteString(fmt.Sprintf("WHERE id = %d and user_id = %d RETURNING id, title, done, created_at, updated_at", *data.Id, userId))
 
 	rows := store.DB.QueryRow(context.Background(), updateBuilder.String(), args...)
 
@@ -128,12 +130,16 @@ func (store *Repository) UpdateTodo(data *UpdateTodoData) (*Todo, error) {
 	return updatedData, nil
 }
 
-func (store *Repository) GetTodo(todoId int) (*Todo, error) {
-	query := fmt.Sprintf(`SELECT * FROM todo WHERE id = %d`, todoId)
+func (store *Repository) GetTodo(todoId int, userId int64) (*Todo, error) {
+	query := `SELECT id, title, done, created_at, updated_at FROM todo WHERE id = @todoId and user_id = @userId`
+	args := pgx.NamedArgs{
+		"todoId": todoId,
+		"userId": userId,
+	}
 
 	var singleTodo *Todo
 	singleTodo = new(Todo)
-	row := store.DB.QueryRow(context.Background(), query)
+	row := store.DB.QueryRow(context.Background(), query, args)
 
 	err := row.Scan(&singleTodo.Id, &singleTodo.Title, &singleTodo.Done, &singleTodo.CreatedAt, &singleTodo.UpdatedAt)
 	if err != nil {
@@ -143,11 +149,12 @@ func (store *Repository) GetTodo(todoId int) (*Todo, error) {
 	return singleTodo, nil
 }
 
-func (store *Repository) RemoveTodo(todoId int) (*Todo, error) {
-	query := `DELETE FROM todo WHERE id = @todoId RETURNING *`
+func (store *Repository) RemoveTodo(todoId int, userId int64) (*Todo, error) {
+	query := `DELETE FROM todo WHERE id = @todoId and user_id = @userId RETURNING id, title, done, created_at, updated_at`
 
 	args := pgx.NamedArgs{
 		"todoId": todoId,
+		"userId": userId,
 	}
 
 	rows := store.DB.QueryRow(context.Background(), query, args)

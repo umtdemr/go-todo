@@ -13,23 +13,24 @@ import (
 
 type APIRoute struct {
 	Route   string
-	Service Service
+	Service *Service
 }
 
-func NewTodoAPIRoute(service Service) *APIRoute {
+func NewTodoAPIRoute(service *Service) *APIRoute {
 	return &APIRoute{Route: "todo", Service: service}
 }
 
-func (s *APIRoute) RegisterRoutes(router *mux.Router) {
-	router.Handle("/todo", user.AuthMiddleware(http.HandlerFunc(s.handleList)))
-	router.Handle("/todo/list", user.AuthMiddleware(http.HandlerFunc(s.handleList)))
-	router.Handle("/todo/create", user.AuthMiddleware(http.HandlerFunc(s.handleAdd)))
-	router.Handle("/todo/update", user.AuthMiddleware(http.HandlerFunc(s.handleUpdate)))
-	router.Handle("/todo/{id}", user.AuthMiddleware(http.HandlerFunc(s.handleFetchAndDelete)))
+func (s *APIRoute) RegisterRoutes(router *mux.Router, userService user.Service) {
+	router.Handle("/todo", userService.AuthMiddleware(http.HandlerFunc(s.handleList)))
+	router.Handle("/todo/list", userService.AuthMiddleware(http.HandlerFunc(s.handleList)))
+	router.Handle("/todo/create", userService.AuthMiddleware(http.HandlerFunc(s.handleAdd)))
+	router.Handle("/todo/update", userService.AuthMiddleware(http.HandlerFunc(s.handleUpdate)))
+	router.Handle("/todo/{id}", userService.AuthMiddleware(http.HandlerFunc(s.handleFetchAndDelete)))
 }
 
 func (s *APIRoute) handleList(w http.ResponseWriter, r *http.Request) {
-	todos, err := s.Repository.GetAllTodos()
+	authenticatedUser := r.Context().Value("user").(*user.VisibleUser)
+	todos, err := s.Service.GetAllTodos(authenticatedUser.Id)
 
 	if err != nil {
 		server.RespondWithError(w, fmt.Sprintf("error while getting list: %s", err), http.StatusBadRequest)
@@ -55,13 +56,9 @@ func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if createTodoType.Title == "" {
-		server.RespondWithError(w, "Title need to be sent", http.StatusBadRequest)
-		return
-	}
+	authenticatedUser := r.Context().Value("user").(*user.VisibleUser)
 
-	createTodoData := NewTodo(createTodoType.Title)
-	createdTodo, createErr := s.Repository.CreateTodo(createTodoData)
+	createdTodo, createErr := s.Service.CreateTodo(&createTodoType, authenticatedUser.Id)
 	if createErr != nil {
 		fmt.Fprintf(os.Stderr, "error while generating the todo: %s\n", createErr)
 	}
@@ -91,7 +88,9 @@ func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedTodo, updateErr := s.Repository.UpdateTodo(&updateData)
+	authenticatedUser := r.Context().Value("user").(*user.VisibleUser)
+
+	updatedTodo, updateErr := s.Service.UpdateTodo(&updateData, authenticatedUser.Id)
 	if updateErr != nil {
 		server.RespondWithError(w, fmt.Sprintf("Error while updating: %s", updateErr), http.StatusBadRequest)
 		return
@@ -119,8 +118,9 @@ func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	authenticatedUser := r.Context().Value("user").(*user.VisibleUser)
 	if r.Method == http.MethodDelete {
-		removedTodo, removeErr := s.Repository.RemoveTodo(todoIdInt)
+		removedTodo, removeErr := s.Service.RemoveTodo(todoIdInt, authenticatedUser.Id)
 		if removeErr != nil {
 			server.RespondWithError(w, removeErr.Error(), http.StatusBadRequest)
 			return
@@ -129,7 +129,7 @@ func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	} else {
-		fetchedTodo, err := s.Repository.GetTodo(todoIdInt)
+		fetchedTodo, err := s.Service.GetTodo(todoIdInt, authenticatedUser.Id)
 		if err != nil {
 			server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 			return

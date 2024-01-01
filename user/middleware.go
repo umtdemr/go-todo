@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func AuthMiddleware(handler http.Handler) http.Handler {
+func (service *Service) AuthMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("Authorization")
 
@@ -35,7 +35,8 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "username", username)
+		user := service.repository.GetUserByUsername(username)
+		ctx := context.WithValue(r.Context(), "user", user)
 		handler.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

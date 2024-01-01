@@ -44,7 +44,7 @@ func main() {
 
 	todoService := todo.NewTodoService(todoRepository)
 	todoAPIRoute := todo.NewTodoAPIRoute(todoService)
-	todoAPIRoute.RegisterRoutes(apiServer.Router)
+	todoAPIRoute.RegisterRoutes(apiServer.Router, *userService)
 
 	apiServer.Run()
 }
