@@ -32,20 +32,20 @@ func ValidateJWT(tokenString string) (string, error) {
 		return "", err
 	}
 	if !token.Valid {
-		return "", ErrorTokenNotValid
+		return "", ErrTokenNotValid
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		_, isExpirationExists := claims["exp"] // no need to check if the token expired since it's automatically checked
 		if !isExpirationExists {
-			return "", ErrorTokenNotValid
+			return "", ErrTokenNotValid
 		}
 
 		username, isUsernameExistsOnMap := claims["username"]
 		if !isUsernameExistsOnMap {
-			return "", ErrorTokenNotValid
+			return "", ErrTokenNotValid
 		}
 
 		return username.(string), nil
 	}
-	return "", ErrorTokenNotValid
+	return "", ErrTokenNotValid
 }

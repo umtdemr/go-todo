@@ -18,38 +18,38 @@ func NewUserService(repo IRepository) *Service {
 func (service *Service) CreateUser(data *CreateUserData) error {
 	// validate username, email and password
 	if userNameLength := len(data.Username); userNameLength < 3 || userNameLength > 20 {
-		return ErrorUsernameLength
+		return ErrUsernameLength
 	}
 
 	userNameRegex := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 	if !userNameRegex.MatchString(data.Username) {
-		return ErrorUserNameNotValidCharacters
+		return ErrUserNameNotValidCharacters
 	}
 
 	if emailLength := len(data.Email); emailLength < 6 || emailLength > 255 {
-		return ErrorEmailLength
+		return ErrEmailLength
 	}
 
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	if !emailRegex.MatchString(data.Email) {
-		return ErrorEmailNotValid
+		return ErrEmailNotValid
 	}
 
 	if passwordLength := len(data.Password); passwordLength < 8 || passwordLength > 64 {
-		return ErrorPasswordLength
+		return ErrPasswordLength
 	}
 
 	// check if the username exists
 	userWithUsername := service.repository.GetUserByUsername(data.Username)
 	if userWithUsername != nil {
-		return ErrorUserNameNotValid
+		return ErrUserNameNotValid
 	}
 
 	// check if the email exists
 	userWithEmail := service.repository.GetUserByEmail(data.Email)
 	if userWithEmail != nil {
-		return ErrorEmailNotValid
+		return ErrEmailNotValid
 	}
 
 	// hash password to secure
@@ -65,18 +65,18 @@ func (service *Service) CreateUser(data *CreateUserData) error {
 
 func (service *Service) Login(data *LoginUserData) (string, error) {
 	if data.Password == nil {
-		return "", ErrorPasswordLength
+		return "", ErrPasswordLength
 	}
 
 	if data.Username == nil && data.Email == nil {
-		return "", ErrorLoginIdEmpty
+		return "", ErrLoginIdEmpty
 	}
 
 	user, userQueryErr := service.repository.GetUserWithAllParams(data)
 
 	if userQueryErr != nil {
 		if errors.Is(userQueryErr, pgx.ErrNoRows) {
-			return "", ErrorUsernameOrPasswordIncorrect
+			return "", ErrUsernameOrPasswordIncorrect
 		}
 		return "", userQueryErr
 	}
@@ -88,7 +88,7 @@ func (service *Service) Login(data *LoginUserData) (string, error) {
 	}
 
 	if !isPassMatched {
-		return "", ErrorUsernameOrPasswordIncorrect
+		return "", ErrUsernameOrPasswordIncorrect
 	}
 
 	// if credentials are correct, generate a token

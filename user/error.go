@@ -47,13 +47,13 @@ func (e UserError) Error() string {
 }
 
 var (
-	ErrorUsernameLength              = UserError{kind: lengthUsername, fields: []string{"username"}}
-	ErrorUserNameNotValidCharacters  = UserError{kind: userNameNotValidCharacters, fields: []string{"username"}}
-	ErrorUserNameNotValid            = UserError{kind: userNameNotValid, fields: []string{"username"}}
-	ErrorEmailLength                 = UserError{kind: lengthEmail, fields: []string{"email"}}
-	ErrorEmailNotValid               = UserError{kind: emailNotValid, fields: []string{"email"}}
-	ErrorPasswordLength              = UserError{kind: lengthPassword, fields: []string{"password"}}
-	ErrorLoginIdEmpty                = UserError{kind: loginIdEmpty, fields: []string{"username", "email"}}
-	ErrorTokenNotValid               = UserError{kind: jwtNotValid}
-	ErrorUsernameOrPasswordIncorrect = UserError{kind: usernameOrPasswordWrong, fields: []string{"username", "password"}}
+	ErrUsernameLength              = UserError{kind: lengthUsername, fields: []string{"username"}}
+	ErrUserNameNotValidCharacters  = UserError{kind: userNameNotValidCharacters, fields: []string{"username"}}
+	ErrUserNameNotValid            = UserError{kind: userNameNotValid, fields: []string{"username"}}
+	ErrEmailLength                 = UserError{kind: lengthEmail, fields: []string{"email"}}
+	ErrEmailNotValid               = UserError{kind: emailNotValid, fields: []string{"email"}}
+	ErrPasswordLength              = UserError{kind: lengthPassword, fields: []string{"password"}}
+	ErrLoginIdEmpty                = UserError{kind: loginIdEmpty, fields: []string{"username", "email"}}
+	ErrTokenNotValid               = UserError{kind: jwtNotValid}
+	ErrUsernameOrPasswordIncorrect = UserError{kind: usernameOrPasswordWrong, fields: []string{"username", "password"}}
 )
