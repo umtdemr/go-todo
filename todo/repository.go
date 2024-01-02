@@ -70,7 +70,7 @@ func (store *Repository) GetAllTodos(userId int64) ([]Todo, error) {
 	}
 	defer rows.Close()
 
-	var todos []Todo
+	todos := []Todo{}
 
 	for rows.Next() {
 		var t Todo
