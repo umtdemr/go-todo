@@ -41,7 +41,8 @@ func (s *APIRoute) handleList(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		server.RespondWithError(w, "not valid", http.StatusBadRequest)
+		err := server.ErrNotValidMethod.With("Only POST methods are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -68,7 +69,8 @@ func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		server.RespondWithError(w, "Only POST methods are allowed", http.StatusBadRequest)
+		err := server.ErrNotValidMethod.With("Only POST methods are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -101,7 +103,8 @@ func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodDelete {
-		server.RespondWithError(w, "Only GET and DELETE requests are allowed", http.StatusBadRequest)
+		err := server.ErrNotValidMethod.With("Only GET and DELETE methods are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
