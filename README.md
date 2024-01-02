@@ -32,9 +32,11 @@ A basic REST API for todo app with PostgreSQL
 2. Todo REST API with PostgreSQL ✅
 3. Todo REST API with Auth ✅
 4. Logging
-5. Open API Integration
-6. Docker integration
-7. Refactor
+5. Reset password / EMAIL integration
+6. Tests
+7. Open API Integration
+8. Docker integration
+9. Refactor
 
 
 ## Questions
