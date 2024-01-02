@@ -14,23 +14,25 @@ A basic REST API for todo app with PostgreSQL
 
 ## API Endpoints
 
-| URL          | METHOD | Description                                    |
-|--------------|--------|------------------------------------------------|
-| /todo/       | GET    | Fetch all the todos                            |
-| /todo/list   | GET    | Fetch all the todos                            |
-| /todo/:id    | GET    | Fetch single todo                              |
-| /todo/:id    | DELETE | Delete a todo                                  |
-| /todo/create | POST   | Creates a todo item with the given title prop  |
-| /todo/update | POST   | Updates a todo either with title or done props |
+| URL            | METHOD | Description                                    |
+|----------------|--------|------------------------------------------------|
+| /todo/         | GET    | Fetch all the todos                            |
+| /todo/list     | GET    | Fetch all the todos                            |
+| /todo/:id      | GET    | Fetch single todo                              |
+| /todo/:id      | DELETE | Delete a todo                                  |
+| /todo/create   | POST   | Creates a todo item with the given title prop  |
+| /todo/update   | POST   | Updates a todo either with title or done props |
+| /user/register | POST   | Register                                       |
+| /user/login    | POST   | Login                                          |
 
 
 ## Roadmap
 
 1. Todo REST API without DB ✅
 2. Todo REST API with PostgreSQL ✅
-3. Todo REST API with Auth (in progress)
+3. Todo REST API with Auth ✅
 
 
 ## Questions
 
-- Does storing the parsed username from a JWT in the context of a request make sense?
+- Does storing the user in the context of a request make sense?
