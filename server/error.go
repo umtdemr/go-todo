@@ -10,6 +10,7 @@ type errKind int
 const (
 	_ errKind = iota
 	notValidMethod
+	invalidRequest
 )
 
 type ServerError struct {
@@ -23,19 +24,26 @@ func (e ServerError) With(info string) ServerError {
 	return err
 }
 
+func (e ServerError) GetMessageWithInfo(actualMsg string) string {
+	errMessage := strings.Builder{}
+	errMessage.WriteString(actualMsg)
+	if e.info != "" {
+		errMessage.WriteString(fmt.Sprintf(". %s", e.info))
+	}
+	return errMessage.String()
+}
+
 func (e ServerError) Error() string {
 	switch e.kind {
 	case notValidMethod:
-		errMessage := strings.Builder{}
-		errMessage.WriteString("Method is not allowed")
-		if e.info != "" {
-			errMessage.WriteString(fmt.Sprintf(". %s", e.info))
-		}
-		return errMessage.String()
+		return e.GetMessageWithInfo("method is not allowed")
+	case invalidRequest:
+		return e.GetMessageWithInfo("invalid request")
 	}
 	return "error with server"
 }
 
 var (
 	ErrNotValidMethod = ServerError{kind: notValidMethod}
+	ErrInvalidRequest = ServerError{kind: invalidRequest}
 )

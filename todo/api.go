@@ -41,7 +41,7 @@ func (s *APIRoute) handleList(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		err := server.ErrNotValidMethod.With("Only POST methods are allowed")
+		err := server.ErrNotValidMethod.With("only POST methods are allowed")
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -69,7 +69,7 @@ func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		err := server.ErrNotValidMethod.With("Only POST methods are allowed")
+		err := server.ErrNotValidMethod.With("only POST methods are allowed")
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -103,7 +103,7 @@ func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodDelete {
-		err := server.ErrNotValidMethod.With("Only GET and DELETE methods are allowed")
+		err := server.ErrNotValidMethod.With("only GET and DELETE methods are allowed")
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -111,13 +111,15 @@ func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) 
 	pathVars := mux.Vars(r)
 	todoId, ok := pathVars["id"]
 	if !ok {
-		server.RespondWithError(w, "couldn't find the id", http.StatusBadRequest)
+		err := server.ErrInvalidRequest.With("id is not sent")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	todoIdInt, parseErr := strconv.Atoi(todoId)
 
 	if parseErr != nil {
-		server.RespondWithError(w, "need and integer value as id", http.StatusBadRequest)
+		err := server.ErrInvalidRequest.With("need a numeric value for the id")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
