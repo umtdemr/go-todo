@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
+	"github.com/umtdemr/go-todo/logger"
 	"github.com/umtdemr/go-todo/server"
 	"github.com/umtdemr/go-todo/todo"
 	"github.com/umtdemr/go-todo/user"
@@ -12,28 +13,45 @@ import (
 
 func main() {
 	viper.SetConfigFile(".env")
-	viper.ReadInConfig()
+	errReadConfig := viper.ReadInConfig()
+
+	if errReadConfig != nil {
+		fmt.Fprintf(os.Stderr, "Error while getting env settings: %s\n", errReadConfig)
+		os.Exit(1)
+	}
+
+	appEnv := viper.Get("APP_ENV")
+	if appEnv == nil {
+		appEnv = "dev"
+	}
+
+	setEnvErr := os.Setenv("APP_ENV", appEnv.(string))
+
+	if setEnvErr != nil {
+		fmt.Fprintf(os.Stderr, "Error while setting app env setting: %s\n", setEnvErr)
+		os.Exit(1)
+	}
+
+	log := logger.Get()
+
 	connStr := viper.Get("postgres")
 
 	store, err := NewPostgresStore(connStr.(string))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error while connecting to db: %v\n", err)
-		os.Exit(1)
+		log.Fatal().Err(err).Msg("Couldn't connect to the db")
 	}
 	defer store.DB.Close(context.Background())
 
 	userRepository, err := user.NewUserRepository(store.DB)
 
 	if userRepoInitErr := userRepository.Init(); userRepoInitErr != nil {
-		fmt.Printf("Error in init: %s\n", userRepoInitErr)
-		os.Exit(1)
+		log.Fatal().Msg("Couldn't create user table")
 	}
 
 	todoRepository, err := todo.NewTodoRepository(store.DB)
 
 	if todoRepoInitErr := todoRepository.Init(); todoRepoInitErr != nil {
-		fmt.Printf("Error in init: %s\n", todoRepoInitErr)
-		os.Exit(1)
+		log.Fatal().Msg("Couldn't create todo table")
 	}
 
 	apiServer := server.NewAPIServer(":8080")
@@ -46,5 +64,6 @@ func main() {
 	todoAPIRoute := todo.NewTodoAPIRoute(todoService)
 	todoAPIRoute.RegisterRoutes(apiServer.Router, *userService)
 
+	log.Info().Msg("Server is running")
 	apiServer.Run()
 }

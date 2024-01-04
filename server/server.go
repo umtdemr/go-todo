@@ -17,7 +17,7 @@ func NewAPIServer(listenAddr string) *APIServer {
 }
 
 func (s *APIServer) Run() {
-	http.ListenAndServe(s.ListenAddr, s.Router)
+	http.ListenAndServe(s.ListenAddr, requestLogger(s.Router))
 }
 
 func Respond(w http.ResponseWriter, data interface{}) {
