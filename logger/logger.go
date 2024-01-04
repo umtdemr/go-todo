@@ -27,8 +27,9 @@ func Get() zerolog.Logger {
 		}
 
 		var output io.Writer = zerolog.ConsoleWriter{
-			Out:        os.Stdout,
-			TimeFormat: time.RFC3339,
+			Out:           os.Stdout,
+			TimeFormat:    time.RFC3339,
+			FieldsExclude: []string{"user_agent"},
 		}
 
 		if os.Getenv("APP_ENV") != "dev" {
