@@ -100,3 +100,8 @@ func (service *Service) Login(data *LoginUserData) (string, error) {
 
 	return tokenString, nil
 }
+
+// TODO: implement this
+func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) error {
+	return nil
+}

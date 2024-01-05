@@ -84,3 +84,28 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	response["token"] = tokenString
 	server.Respond(w, response)
 }
+
+func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		err := server.ErrNotValidMethod.With("only post requests are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var resetPasswordRequestData ResetPasswordRequest
+
+	// TODO: I can create a common handler for decoding the body since I've repeated this so much
+	decoder := json.NewDecoder(r.Body)
+	decodeErr := decoder.Decode(&resetPasswordRequestData)
+	if decodeErr != nil {
+		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
+		return
+	}
+
+	err := route.Service.SendResetPasswordToken(&resetPasswordRequestData)
+
+	if err != nil {
+		server.RespondWithError(w, "error while creating token", http.StatusBadRequest)
+		return
+	}
+}
