@@ -25,7 +25,7 @@ func GenerateResetPasswordToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email":                  email,
 		"exp":                    expirationTime.Unix(),
-		"isRequestPasswordToken": true,
+		"isRequestPasswordToken": true, // identifier. We seek if the props exists. Value is not important here
 	})
 
 	tokenString, err := token.SignedString(jwtSecret)
@@ -59,6 +59,43 @@ func ValidateJWT(tokenString string) (string, error) {
 		}
 
 		return username.(string), nil
+	}
+	return "", ErrTokenNotValid
+}
+
+// TODO: refactor validating JWT
+func ValidateResetPasswordToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected siging method: %v", token.Header["alg"])
+		}
+		return jwtSecret, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+	if !token.Valid {
+		return "", ErrTokenNotValid
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		_, isExpirationExists := claims["exp"] // no need to check if the token expired since it's automatically checked
+		if !isExpirationExists {
+			return "", ErrTokenNotValid
+		}
+
+		_, isRequestPasswordTokenErr := claims["isRequestPasswordToken"]
+
+		if !isRequestPasswordTokenErr {
+			return "", ErrTokenNotValid
+		}
+
+		email, isEmailExistsOnMap := claims["email"]
+		if !isEmailExistsOnMap {
+			return "", ErrTokenNotValid
+		}
+
+		return email.(string), nil
 	}
 	return "", ErrTokenNotValid
 }
