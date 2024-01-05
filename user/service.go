@@ -131,6 +131,32 @@ func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) (stri
 	return tokenString, nil
 }
 
-func (service *Service) ApplyNewPasswordWithToken() error {
-	return nil
+func (service *Service) ApplyNewPasswordWithToken(data *NewPasswordRequest) error {
+	if data.Token == "" {
+		return ErrTokenNotValid
+	}
+
+	if passwordLength := len(data.Password); passwordLength < 8 || passwordLength > 64 {
+		return ErrPasswordLength
+	}
+
+	email, tokenErr := ValidateResetPasswordToken(data.Token)
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	user := service.repository.GetUserByEmail(email)
+
+	if user == nil {
+		return ErrUserNotFound
+	}
+
+	hashedPassword, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams)
+	if err != nil {
+		return errors.New("error while hashing the password")
+	}
+
+	updateUserErr := service.repository.UpdateUserPassword(user.Id, hashedPassword)
+
+	return updateUserErr
 }

@@ -13,6 +13,7 @@ const (
 	loginIdEmpty // in case username and email is empty
 	jwtNotValid
 	usernameOrPasswordWrong
+	userNotFound
 )
 
 type UserError struct {
@@ -42,6 +43,8 @@ func (e UserError) Error() string {
 		return "token is invalid"
 	case usernameOrPasswordWrong:
 		return "username or password is incorrect"
+	case userNotFound:
+		return "user not found"
 	}
 	return "error in user"
 }
@@ -56,4 +59,5 @@ var (
 	ErrLoginIdEmpty                = UserError{kind: loginIdEmpty, fields: []string{"username", "email"}}
 	ErrTokenNotValid               = UserError{kind: jwtNotValid}
 	ErrUsernameOrPasswordIncorrect = UserError{kind: usernameOrPasswordWrong, fields: []string{"username", "password"}}
+	ErrUserNotFound                = UserError{kind: userNotFound}
 )

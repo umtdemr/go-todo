@@ -136,7 +136,7 @@ func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	errApplyNewPassword := route.Service.ApplyNewPasswordWithToken()
+	errApplyNewPassword := route.Service.ApplyNewPasswordWithToken(&newPasswordData)
 
 	if errApplyNewPassword != nil {
 		server.RespondWithError(w, errApplyNewPassword.Error(), http.StatusBadRequest)

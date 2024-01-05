@@ -11,6 +11,7 @@ type IRepository interface {
 	GetUserWithAllParams(data *LoginUserData) (*UserParams, error)
 	GetUserByUsername(username string) *VisibleUser
 	GetUserByEmail(email string) *VisibleUser
+	UpdateUserPassword(userId int64, newPassword string) error
 }
 
 type Repository struct {
@@ -118,4 +119,16 @@ func (repository *Repository) GetUserByEmail(email string) *VisibleUser {
 	}
 
 	return &user
+}
+
+func (repository *Repository) UpdateUserPassword(userId int64, newPassword string) error {
+	query := `UPDATE "user" SET password = @password WHERE id = @id`
+	args := pgx.NamedArgs{
+		"password": newPassword,
+		"id":       userId,
+	}
+
+	_, resultErr := repository.db.Exec(context.Background(), query, args)
+
+	return resultErr
 }
