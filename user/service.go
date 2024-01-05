@@ -100,3 +100,63 @@ func (service *Service) Login(data *LoginUserData) (string, error) {
 
 	return tokenString, nil
 }
+
+// TODO: implement this
+func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) (string, error) {
+	if data.Email == "" {
+		return "", ErrEmailNotValid
+	}
+
+	// todo: create a common handler for this
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+	if !emailRegex.MatchString(data.Email) {
+		return "", ErrEmailNotValid
+	}
+
+	user := service.repository.GetUserByEmail(data.Email)
+
+	// we don't need to inform the user if there is not an user with the given email
+	// see: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+	if user == nil {
+		return "", nil
+	}
+
+	tokenString, err := GenerateResetPasswordToken(user.Email)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func (service *Service) ApplyNewPasswordWithToken(data *NewPasswordRequest) error {
+	if data.Token == "" {
+		return ErrTokenNotValid
+	}
+
+	if passwordLength := len(data.Password); passwordLength < 8 || passwordLength > 64 {
+		return ErrPasswordLength
+	}
+
+	email, tokenErr := ValidateResetPasswordToken(data.Token)
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	user := service.repository.GetUserByEmail(email)
+
+	if user == nil {
+		return ErrUserNotFound
+	}
+
+	hashedPassword, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams)
+	if err != nil {
+		return errors.New("error while hashing the password")
+	}
+
+	updateUserErr := service.repository.UpdateUserPassword(user.Id, hashedPassword)
+
+	return updateUserErr
+}

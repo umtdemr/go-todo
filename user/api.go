@@ -21,6 +21,8 @@ func NewAPIRoute(userService Service) *APIRoute {
 func (route *APIRoute) RegisterAPIRoutes(router *mux.Router) {
 	router.HandleFunc("/user/register", route.handleCreateUser)
 	router.HandleFunc("/user/login", route.handleLogin)
+	router.HandleFunc("/user/reset-password-request", route.handleResetPasswordRequest)
+	router.HandleFunc("/user/new-password", route.handleNewPassword)
 }
 
 func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -83,4 +85,66 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	response["message"] = "success"
 	response["token"] = tokenString
 	server.Respond(w, response)
+}
+
+func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		err := server.ErrNotValidMethod.With("only post requests are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var resetPasswordRequestData ResetPasswordRequest
+
+	// TODO: I can create a common handler for decoding the body since I've repeated this so much
+	decoder := json.NewDecoder(r.Body)
+	decodeErr := decoder.Decode(&resetPasswordRequestData)
+	if decodeErr != nil {
+		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
+		return
+	}
+
+	tokenString, err := route.Service.SendResetPasswordToken(&resetPasswordRequestData)
+
+	if err != nil {
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	message := make(map[string]string)
+	message["message"] = "success"
+
+	// todo: instead of this send an email
+	message["token"] = tokenString
+
+	server.Respond(w, message)
+	return
+}
+
+func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		err := server.ErrNotValidMethod.With("only post requests are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var newPasswordData NewPasswordRequest
+	decoder := json.NewDecoder(r.Body)
+	decodeErr := decoder.Decode(&newPasswordData)
+	if decodeErr != nil {
+		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
+		return
+	}
+
+	errApplyNewPassword := route.Service.ApplyNewPasswordWithToken(&newPasswordData)
+
+	if errApplyNewPassword != nil {
+		server.RespondWithError(w, errApplyNewPassword.Error(), http.StatusBadRequest)
+		return
+	}
+
+	message := make(map[string]string)
+	message["message"] = "success"
+	server.Respond(w, message)
+	return
 }

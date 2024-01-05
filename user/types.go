@@ -39,3 +39,12 @@ type UserParams struct {
 	IsVerified bool      `json:"is_verified"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+type ResetPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+type NewPasswordRequest struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+}
