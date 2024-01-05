@@ -22,6 +22,7 @@ func (route *APIRoute) RegisterAPIRoutes(router *mux.Router) {
 	router.HandleFunc("/user/register", route.handleCreateUser)
 	router.HandleFunc("/user/login", route.handleLogin)
 	router.HandleFunc("/user/reset-password-request", route.handleResetPasswordRequest)
+	router.HandleFunc("/user/new-password", route.handleNewPassword)
 }
 
 func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -116,6 +117,34 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 	// todo: instead of this send an email
 	message["token"] = tokenString
 
+	server.Respond(w, message)
+	return
+}
+
+func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		err := server.ErrNotValidMethod.With("only post requests are allowed")
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var newPasswordData NewPasswordRequest
+	decoder := json.NewDecoder(r.Body)
+	decodeErr := decoder.Decode(&newPasswordData)
+	if decodeErr != nil {
+		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
+		return
+	}
+
+	errApplyNewPassword := route.Service.ApplyNewPasswordWithToken()
+
+	if errApplyNewPassword != nil {
+		server.RespondWithError(w, errApplyNewPassword.Error(), http.StatusBadRequest)
+		return
+	}
+
+	message := make(map[string]string)
+	message["message"] = "success"
 	server.Respond(w, message)
 	return
 }

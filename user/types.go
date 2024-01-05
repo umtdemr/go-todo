@@ -43,3 +43,8 @@ type UserParams struct {
 type ResetPasswordRequest struct {
 	Email string `json:"email"`
 }
+
+type NewPasswordRequest struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+}

@@ -130,3 +130,7 @@ func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) (stri
 
 	return tokenString, nil
 }
+
+func (service *Service) ApplyNewPasswordWithToken() error {
+	return nil
+}
