@@ -103,10 +103,19 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 		return
 	}
 
-	err := route.Service.SendResetPasswordToken(&resetPasswordRequestData)
+	tokenString, err := route.Service.SendResetPasswordToken(&resetPasswordRequestData)
 
 	if err != nil {
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	message := make(map[string]string)
+	message["message"] = "success"
+
+	// todo: instead of this send an email
+	message["token"] = tokenString
+
+	server.Respond(w, message)
+	return
 }

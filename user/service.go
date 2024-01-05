@@ -102,16 +102,16 @@ func (service *Service) Login(data *LoginUserData) (string, error) {
 }
 
 // TODO: implement this
-func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) error {
+func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) (string, error) {
 	if data.Email == "" {
-		return ErrEmailNotValid
+		return "", ErrEmailNotValid
 	}
 
 	// todo: create a common handler for this
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	if !emailRegex.MatchString(data.Email) {
-		return ErrEmailNotValid
+		return "", ErrEmailNotValid
 	}
 
 	user := service.repository.GetUserByEmail(data.Email)
@@ -119,8 +119,14 @@ func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) error
 	// we don't need to inform the user if there is not an user with the given email
 	// see: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
 	if user == nil {
-		return nil
+		return "", nil
 	}
 
-	return nil
+	tokenString, err := GenerateResetPasswordToken(user.Email)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

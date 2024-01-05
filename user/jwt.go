@@ -20,6 +20,19 @@ func GenerateNewJWT(username string) (string, error) {
 	return tokenString, err
 }
 
+func GenerateResetPasswordToken(email string) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email":                  email,
+		"exp":                    expirationTime.Unix(),
+		"isRequestPasswordToken": true,
+	})
+
+	tokenString, err := token.SignedString(jwtSecret)
+
+	return tokenString, err
+}
+
 func ValidateJWT(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
