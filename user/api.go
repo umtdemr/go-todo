@@ -21,6 +21,7 @@ func NewAPIRoute(userService Service) *APIRoute {
 func (route *APIRoute) RegisterAPIRoutes(router *mux.Router) {
 	router.HandleFunc("/user/register", route.handleCreateUser)
 	router.HandleFunc("/user/login", route.handleLogin)
+	router.HandleFunc("/user/reset-password-request", route.handleResetPasswordRequest)
 }
 
 func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +106,7 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 	err := route.Service.SendResetPasswordToken(&resetPasswordRequestData)
 
 	if err != nil {
-		server.RespondWithError(w, "error while creating token", http.StatusBadRequest)
+		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 }
