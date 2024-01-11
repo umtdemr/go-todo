@@ -112,7 +112,7 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 		return
 	}
 
-	email.SenEmail(email.SendEmailData{
+	sendErr := email.SenEmail(email.SendEmailData{
 		To:      []string{resetPasswordRequestData.Email},
 		Subject: "Your reset password token",
 		Message: fmt.Sprintf("Your reset password token is: %s", tokenString),
@@ -120,6 +120,11 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 
 	message := make(map[string]string)
 	message["message"] = "success"
+
+	// if there is an error while sending the email, add the token to the response
+	if sendErr != nil {
+		message["token"] = tokenString
+	}
 
 	server.Respond(w, message)
 	return

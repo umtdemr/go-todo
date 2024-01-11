@@ -48,7 +48,10 @@ func Init() {
 	})
 }
 
-func SenEmail(data SendEmailData) {
+func SenEmail(data SendEmailData) error {
+	if !config.IsEmailEnabled {
+		return fmt.Errorf("email service is not enabled")
+	}
 	log := logger.Get()
 
 	addr := config.Host + ":" + config.Port
@@ -82,4 +85,5 @@ func SenEmail(data SendEmailData) {
 		Str("to", receiverHeader).
 		Str("subject", subject).
 		Msg("Email sent")
+	return nil
 }
