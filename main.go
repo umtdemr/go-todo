@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
+	"github.com/umtdemr/go-todo/email"
 	"github.com/umtdemr/go-todo/logger"
 	"github.com/umtdemr/go-todo/server"
 	"github.com/umtdemr/go-todo/todo"
@@ -41,6 +42,8 @@ func main() {
 		log.Fatal().Err(err).Msg("Couldn't connect to the db")
 	}
 	defer store.DB.Close(context.Background())
+
+	email.Init()
 
 	userRepository, err := user.NewUserRepository(store.DB)
 
