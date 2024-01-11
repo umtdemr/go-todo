@@ -17,6 +17,12 @@ type Config struct {
 	Port           string
 }
 
+type SendEmailData struct {
+	To      []string
+	Subject string
+	Message string
+}
+
 var config Config
 var once sync.Once
 
@@ -55,11 +61,7 @@ func Init() {
 	})
 }
 
-func SenEmail() {
-
-	to := []string{
-		"umitde692@gmail.com",
-	}
+func SenEmail(data SendEmailData) {
 
 	addr := config.Host + ":" + config.Port
 
@@ -68,16 +70,22 @@ func SenEmail() {
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
 
+	receiverHeader := ""
+	for _, receiver := range data.To {
+		receiverHeader += receiver + ", "
+	}
+	receiverHeader = receiverHeader[:len(receiverHeader)-2]
+
 	header := ""
 	header += fmt.Sprintf("From: %s\r\n", config.From)
-	header += fmt.Sprintf("To: %s\r\n", to[0])
+	header += fmt.Sprintf("To: %s\r\n", receiverHeader)
 	header += fmt.Sprintf("Subject: %s\r\n", subject)
 	header += "\r\n" // Separate header from body
 	message := header + body
 
 	byteMessage := []byte(message)
 
-	err := smtp.SendMail(addr, auth, config.From, to, byteMessage)
+	err := smtp.SendMail(addr, auth, config.From, data.To, byteMessage)
 	if err != nil {
 		panic(err)
 	}
