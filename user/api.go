@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/umtdemr/go-todo/email"
 	"github.com/umtdemr/go-todo/server"
 	"net/http"
 )
@@ -111,11 +112,14 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 		return
 	}
 
+	email.SenEmail(email.SendEmailData{
+		To:      []string{resetPasswordRequestData.Email},
+		Subject: "Your reset password token",
+		Message: fmt.Sprintf("Your reset password token is: %s", tokenString),
+	})
+
 	message := make(map[string]string)
 	message["message"] = "success"
-
-	// todo: instead of this send an email
-	message["token"] = tokenString
 
 	server.Respond(w, message)
 	return

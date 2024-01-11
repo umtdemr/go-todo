@@ -47,11 +47,10 @@ func Init() {
 }
 
 func SenEmail(data SendEmailData) {
-
 	addr := config.Host + ":" + config.Port
 
-	subject := "Email subject"
-	body := "Email body"
+	subject := data.Subject
+	body := data.Message
 
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
 
