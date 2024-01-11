@@ -30,6 +30,7 @@ func Init() {
 				}
 			}
 
+			log.Info().Msg("Email service is enabled")
 			config = Config{
 				IsEmailEnabled: true,
 				From:           viper.Get("EMAIL_FROM").(string),
@@ -39,6 +40,7 @@ func Init() {
 				Port:           viper.Get("EMAIL_PORT").(string),
 			}
 		} else {
+			log.Info().Msg("Email service is not enabled")
 			config = Config{
 				IsEmailEnabled: false,
 			}
@@ -47,6 +49,8 @@ func Init() {
 }
 
 func SenEmail(data SendEmailData) {
+	log := logger.Get()
+
 	addr := config.Host + ":" + config.Port
 
 	subject := data.Subject
@@ -71,6 +75,11 @@ func SenEmail(data SendEmailData) {
 
 	err := smtp.SendMail(addr, auth, config.From, data.To, byteMessage)
 	if err != nil {
-		panic(err)
+		log.Panic().Err(err).Msg("Couldn't send email")
 	}
+
+	log.Info().
+		Str("to", receiverHeader).
+		Str("subject", subject).
+		Msg("Email sent")
 }
