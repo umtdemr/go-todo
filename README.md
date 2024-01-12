@@ -1,4 +1,4 @@
-# Todo REST API without DB
+# Todo REST API
 
 A basic REST API for todo app with PostgreSQL
 
@@ -31,8 +31,8 @@ A basic REST API for todo app with PostgreSQL
 1. Todo REST API without DB ✅
 2. Todo REST API with PostgreSQL ✅
 3. Todo REST API with Auth ✅
-4. Logging
-5. Reset password / EMAIL integration
+4. Logging ✅
+5. Reset password / EMAIL integration ✅
 6. Tests
 7. Open API Integration
 8. Docker integration
