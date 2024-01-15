@@ -65,7 +65,7 @@ func Init() {
 
 func SenEmail(data SendEmailData) error {
 	if !config.IsEmailEnabled {
-		return fmt.Errorf("email service is not enabled")
+		return ErrServiceNotEnabled
 	}
 	log := logger.Get()
 
