@@ -25,7 +25,18 @@ type Sender interface {
 	SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error
 }
 
+type EnvGetter interface {
+	Get(key string) any
+}
+
 type defaultEmailSender struct{}
+type viperGetter struct{}
+
+func (v *viperGetter) Get(key string) any {
+	return viper.Get(key)
+}
+
+var viperGetterInstance EnvGetter = &viperGetter{}
 
 // SendMail is a wrapper for smtp.SendMail for mocking purposes
 func (s *defaultEmailSender) SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
@@ -35,32 +46,42 @@ func (s *defaultEmailSender) SendMail(addr string, a smtp.Auth, from string, to 
 var emailSender Sender = &defaultEmailSender{}
 
 func Init() {
-	log := logger.Get()
-	once.Do(func() {
-		isEmailEnabled := viper.Get("EMAIL_ENABLED")
-		if isEmailEnabled == "1" {
-			for _, param := range EnvParams {
-				if viper.Get(param) == nil {
-					log.Fatal().Msg(fmt.Sprintf("environment variable %s is not set", param))
-				}
-			}
+	once.Do(initializeConfig)
+}
 
-			log.Info().Msg("Email service is enabled")
-			config = Config{
-				IsEmailEnabled: true,
-				From:           viper.Get("EMAIL_FROM").(string),
-				Username:       viper.Get("EMAIL_USERNAME").(string),
-				Password:       viper.Get("EMAIL_PASSWORD").(string),
-				Host:           viper.Get("EMAIL_HOST").(string),
-				Port:           viper.Get("EMAIL_PORT").(string),
+func initializeConfig() {
+	log := logger.Get()
+	isEmailEnabled := viperGetterInstance.Get("EMAIL_ENABLED")
+	if isEmailEnabled == "1" {
+		for _, param := range EnvParams {
+			var isParamNil bool
+			if viperGetterInstance.Get(param) == nil {
+				isParamNil = true
+				log.Info().Msg(fmt.Sprintf("environment variable %s is not set", param))
 			}
-		} else {
-			log.Info().Msg("Email service is not enabled")
-			config = Config{
-				IsEmailEnabled: false,
+			if isParamNil {
+				config = Config{
+					IsEmailEnabled: false,
+				}
+				return
 			}
 		}
-	})
+
+		log.Info().Msg("Email service is enabled")
+		config = Config{
+			IsEmailEnabled: true,
+			From:           viperGetterInstance.Get("EMAIL_FROM").(string),
+			Username:       viperGetterInstance.Get("EMAIL_USERNAME").(string),
+			Password:       viperGetterInstance.Get("EMAIL_PASSWORD").(string),
+			Host:           viperGetterInstance.Get("EMAIL_HOST").(string),
+			Port:           viperGetterInstance.Get("EMAIL_PORT").(string),
+		}
+	} else {
+		log.Info().Msg("Email service is not enabled")
+		config = Config{
+			IsEmailEnabled: false,
+		}
+	}
 }
 
 func SenEmail(data SendEmailData) error {
