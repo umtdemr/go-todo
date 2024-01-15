@@ -19,6 +19,21 @@ var EnvParams = []string{
 	"EMAIL_PASSWORD",
 }
 
+// Sender is an interface for sending emails
+// can be mocked for testing
+type Sender interface {
+	SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error
+}
+
+type defaultEmailSender struct{}
+
+// SendMail is a wrapper for smtp.SendMail for mocking purposes
+func (s *defaultEmailSender) SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
+	return smtp.SendMail(addr, a, from, to, msg)
+}
+
+var emailSender Sender = &defaultEmailSender{}
+
 func Init() {
 	log := logger.Get()
 	once.Do(func() {
@@ -76,7 +91,7 @@ func SenEmail(data SendEmailData) error {
 
 	byteMessage := []byte(message)
 
-	err := smtp.SendMail(addr, auth, config.From, data.To, byteMessage)
+	err := emailSender.SendMail(addr, auth, config.From, data.To, byteMessage)
 	if err != nil {
 		log.Panic().Err(err).Msg("Couldn't send email")
 	}
