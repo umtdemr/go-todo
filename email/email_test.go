@@ -1,6 +1,7 @@
 package email
 
 import (
+	"errors"
 	"github.com/stretchr/testify/mock"
 	"net/smtp"
 	"testing"
@@ -15,6 +16,7 @@ func (m *mockEmailSender) SendMail(addr string, a smtp.Auth, from string, to []s
 	return args.Error(0)
 }
 
+// TestSenEmail_ShowErrorIfNotEnabled tests that SendEmail returns an error if email service is not enabled
 func TestSenEmail_ShowErrorIfNotEnabled(t *testing.T) {
 	mockSender := new(mockEmailSender)
 	originalEmailSender := emailSender
@@ -31,7 +33,7 @@ func TestSenEmail_ShowErrorIfNotEnabled(t *testing.T) {
 
 	err := SenEmail(emailData)
 
-	if err == nil {
+	if err == nil || !errors.Is(err, ErrServiceNotEnabled) {
 		t.Errorf("Error while sending email: %s", err)
 	}
 }
