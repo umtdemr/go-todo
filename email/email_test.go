@@ -1,7 +1,7 @@
 package email
 
 import (
-	"errors"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/smtp"
 	"testing"
@@ -33,7 +33,5 @@ func TestSenEmail_ShowErrorIfNotEnabled(t *testing.T) {
 
 	err := SenEmail(emailData)
 
-	if err == nil || !errors.Is(err, ErrServiceNotEnabled) {
-		t.Errorf("Error while sending email: %s", err)
-	}
+	assert.Equal(t, ErrServiceNotEnabled, err)
 }
