@@ -30,3 +30,35 @@ func TestGenerateNewJWT(t *testing.T) {
 		assert.Equal(t, username, parsedUsername)
 	}
 }
+
+func TestValidateJWT(t *testing.T) {
+	validToken, _ := GenerateNewJWT("testuser")
+
+	tests := []struct {
+		name          string
+		tokenString   string
+		expectedError error
+		expectedUser  string
+	}{
+		{
+			name:          "Valid Token",
+			tokenString:   validToken,
+			expectedError: nil,
+			expectedUser:  "testuser",
+		},
+		{
+			name:          "Invalid Token",
+			tokenString:   "invalid.token.string",
+			expectedError: ErrTokenNotValid,
+			expectedUser:  "",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			user, err := ValidateJWT(tc.tokenString)
+			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expectedUser, user)
+		})
+	}
+}

@@ -42,7 +42,7 @@ func ValidateJWT(tokenString string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return "", ErrTokenNotValid
 	}
 	if !token.Valid {
 		return "", ErrTokenNotValid
