@@ -26,7 +26,7 @@ func (m *mockViper) Get(key string) interface{} {
 }
 
 // TestSenEmail_ShowErrorIfNotEnabled tests that SendEmail returns an error if email service is not enabled
-func TestSenEmail_ShowErrorIfNotEnabled(t *testing.T) {
+func TestSend_ShowErrorIfNotEnabled(t *testing.T) {
 	mockSender := new(mockEmailSender)
 	originalEmailSender := emailSender
 	emailSender = mockSender
@@ -40,12 +40,12 @@ func TestSenEmail_ShowErrorIfNotEnabled(t *testing.T) {
 		Message: "message",
 	}
 
-	err := SenEmail(emailData)
+	err := Send(emailData)
 
 	assert.Equal(t, ErrServiceNotEnabled, err)
 }
 
-func TestSenEmail(t *testing.T) {
+func TestSend(t *testing.T) {
 	mockSender := new(mockEmailSender)
 	originalEmailSender := emailSender
 	emailSender = mockSender
@@ -88,7 +88,7 @@ func TestSenEmail(t *testing.T) {
 			}
 			mockSender.On("SendMail", mock.Anything, mock.Anything, mock.Anything, tc.data.To, mock.Anything).Return(tc.mockedResponseErr)
 
-			err := SenEmail(tc.data)
+			err := Send(tc.data)
 
 			assert.Equal(t, tc.mockedResponseErr, err)
 

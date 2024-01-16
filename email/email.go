@@ -84,7 +84,7 @@ func initializeConfig() {
 	}
 }
 
-func SenEmail(data SendEmailData) error {
+func Send(data SendEmailData) error {
 	if !config.IsEmailEnabled {
 		return ErrServiceNotEnabled
 	}
