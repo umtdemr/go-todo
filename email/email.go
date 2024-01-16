@@ -114,7 +114,8 @@ func SenEmail(data SendEmailData) error {
 
 	err := emailSender.SendMail(addr, auth, config.From, data.To, byteMessage)
 	if err != nil {
-		log.Panic().Err(err).Msg("Couldn't send email")
+		log.Error().Err(err).Msg("Couldn't send email")
+		return err
 	}
 
 	log.Info().

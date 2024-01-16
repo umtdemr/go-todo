@@ -45,6 +45,59 @@ func TestSenEmail_ShowErrorIfNotEnabled(t *testing.T) {
 	assert.Equal(t, ErrServiceNotEnabled, err)
 }
 
+func TestSenEmail(t *testing.T) {
+	mockSender := new(mockEmailSender)
+	originalEmailSender := emailSender
+	emailSender = mockSender
+	defer func() { emailSender = originalEmailSender }()
+
+	tests := []struct {
+		name              string
+		data              SendEmailData
+		mockedResponseErr error
+	}{
+		{
+			name: "should successfully send email",
+			data: SendEmailData{
+				To:      []string{"to"},
+				Subject: "subject",
+				Message: "message",
+			},
+			mockedResponseErr: nil,
+		},
+		{
+			name: "should return the error if email service fails",
+			data: SendEmailData{
+				To:      []string{"to"},
+				Subject: "subject",
+				Message: "message",
+			},
+			mockedResponseErr: ErrServiceNotEnabled, // any error
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			config = Config{
+				IsEmailEnabled: true,
+				From:           "from",
+				Username:       "username",
+				Password:       "password",
+				Host:           "host",
+				Port:           "port",
+			}
+			mockSender.On("SendMail", mock.Anything, mock.Anything, mock.Anything, tc.data.To, mock.Anything).Return(tc.mockedResponseErr)
+
+			err := SenEmail(tc.data)
+
+			assert.Equal(t, tc.mockedResponseErr, err)
+
+			mockSender.ExpectedCalls = nil
+			mockSender.Calls = nil
+		})
+	}
+}
+
 // TestInit tests that Init sets the config correctly
 func TestInit(t *testing.T) {
 	type test struct {
