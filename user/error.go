@@ -23,6 +23,8 @@ type UserError struct {
 	fields []string
 }
 
+type Fields []string
+
 func (e UserError) Error() string {
 	switch e.kind {
 	case lengthUsername:
@@ -50,14 +52,14 @@ func (e UserError) Error() string {
 }
 
 var (
-	ErrUsernameLength              = UserError{kind: lengthUsername, fields: []string{"username"}}
-	ErrUserNameNotValidCharacters  = UserError{kind: userNameNotValidCharacters, fields: []string{"username"}}
-	ErrUserNameNotValid            = UserError{kind: userNameNotValid, fields: []string{"username"}}
-	ErrEmailLength                 = UserError{kind: lengthEmail, fields: []string{"email"}}
-	ErrEmailNotValid               = UserError{kind: emailNotValid, fields: []string{"email"}}
-	ErrPasswordLength              = UserError{kind: lengthPassword, fields: []string{"password"}}
-	ErrLoginIdEmpty                = UserError{kind: loginIdEmpty, fields: []string{"username", "email"}}
+	ErrUsernameLength              = UserError{kind: lengthUsername, fields: Fields{"username"}}
+	ErrUserNameNotValidCharacters  = UserError{kind: userNameNotValidCharacters, fields: Fields{"username"}}
+	ErrUserNameNotValid            = UserError{kind: userNameNotValid, fields: Fields{"username"}}
+	ErrEmailLength                 = UserError{kind: lengthEmail, fields: Fields{"email"}}
+	ErrEmailNotValid               = UserError{kind: emailNotValid, fields: Fields{"email"}}
+	ErrPasswordLength              = UserError{kind: lengthPassword, fields: Fields{"password"}}
+	ErrLoginIdEmpty                = UserError{kind: loginIdEmpty, fields: Fields{"username", "email"}}
 	ErrTokenNotValid               = UserError{kind: jwtNotValid}
-	ErrUsernameOrPasswordIncorrect = UserError{kind: usernameOrPasswordWrong, fields: []string{"username", "password"}}
+	ErrUsernameOrPasswordIncorrect = UserError{kind: usernameOrPasswordWrong, fields: Fields{"username", "password"}}
 	ErrUserNotFound                = UserError{kind: userNotFound}
 )
