@@ -46,7 +46,7 @@ func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) 
 	if createErr != nil {
 		var e UserError
 		if errors.As(createErr, &e) {
-			server.RespondWithError(w, fmt.Sprintf("validation error: %v", e.Error()), http.StatusBadRequest)
+			server.RespondWithErrorFields(w, fmt.Sprintf("validation error: %v", e.Error()), http.StatusBadRequest, e.fields)
 			return
 		}
 		server.RespondWithError(w, fmt.Sprintf("error while creating user: %v", createErr), http.StatusBadRequest)
@@ -78,6 +78,11 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	tokenString, loginError := route.Service.Login(&userLoginData)
 
 	if loginError != nil {
+		var e UserError
+		if errors.As(loginError, &e) {
+			server.RespondWithErrorFields(w, fmt.Sprintf("validation error: %v", e.Error()), http.StatusBadRequest, e.fields)
+			return
+		}
 		server.RespondWithError(w, loginError.Error(), http.StatusBadRequest)
 		return
 	}
