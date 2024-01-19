@@ -21,11 +21,11 @@ func (s *APIServer) Run() {
 }
 
 func Respond(w http.ResponseWriter, data interface{}, statusCode int) {
-	isThereError := false
 	jsonData, err := json.Marshal(data)
 
 	if err != nil {
-		isThereError = true
+		RespondWithError(w, fmt.Sprintf("error while marshalling data: %v", err), http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -33,11 +33,8 @@ func Respond(w http.ResponseWriter, data interface{}, statusCode int) {
 	_, writeError := w.Write(jsonData)
 
 	if writeError != nil {
-		isThereError = true
-	}
-
-	if isThereError {
-		w.WriteHeader(http.StatusBadRequest)
+		RespondWithError(w, fmt.Sprintf("error while writing the data: %v", writeError), http.StatusBadRequest)
+		return
 	}
 }
 
