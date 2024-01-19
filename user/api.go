@@ -55,7 +55,7 @@ func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) 
 
 	response := make(map[string]string)
 	response["message"] = "success"
-	server.Respond(w, response)
+	server.RespondCreated(w, response)
 	return
 }
 
@@ -85,7 +85,7 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]string)
 	response["message"] = "success"
 	response["token"] = tokenString
-	server.Respond(w, response)
+	server.RespondOK(w, response)
 }
 
 func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +126,7 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 		message["token"] = tokenString
 	}
 
-	server.Respond(w, message)
+	server.RespondOK(w, message)
 	return
 }
 
@@ -154,6 +154,6 @@ func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request)
 
 	message := make(map[string]string)
 	message["message"] = "success"
-	server.Respond(w, message)
+	server.RespondOK(w, message)
 	return
 }

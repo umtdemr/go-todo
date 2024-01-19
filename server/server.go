@@ -20,7 +20,7 @@ func (s *APIServer) Run() {
 	http.ListenAndServe(s.ListenAddr, requestLogger(s.Router))
 }
 
-func Respond(w http.ResponseWriter, data interface{}) {
+func Respond(w http.ResponseWriter, data interface{}, statusCode int) {
 	isThereError := false
 	jsonData, err := json.Marshal(data)
 
@@ -29,6 +29,7 @@ func Respond(w http.ResponseWriter, data interface{}) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
 	_, writeError := w.Write(jsonData)
 
 	if writeError != nil {
@@ -38,6 +39,18 @@ func Respond(w http.ResponseWriter, data interface{}) {
 	if isThereError {
 		w.WriteHeader(http.StatusBadRequest)
 	}
+}
+
+func RespondOK(w http.ResponseWriter, data interface{}) {
+	Respond(w, data, http.StatusOK)
+}
+
+func RespondCreated(w http.ResponseWriter, data interface{}) {
+	Respond(w, data, http.StatusCreated)
+}
+
+func RespondNoContent(w http.ResponseWriter, data interface{}) {
+	Respond(w, data, http.StatusNoContent)
 }
 
 func RespondWithError(w http.ResponseWriter, msg string, errCode int) {
