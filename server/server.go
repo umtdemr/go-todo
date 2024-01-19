@@ -50,7 +50,7 @@ func RespondNoContent(w http.ResponseWriter, data interface{}) {
 	Respond(w, data, http.StatusNoContent)
 }
 
-func RespondWithError(w http.ResponseWriter, msg string, errCode int) {
+func RespondError(w http.ResponseWriter, msg string, errCode int, fields []string) {
 	if msg == "" {
 		msg = "An error has occurred while processing"
 	}
@@ -59,8 +59,11 @@ func RespondWithError(w http.ResponseWriter, msg string, errCode int) {
 	}
 	w.WriteHeader(errCode)
 
-	resp := make(map[string]string)
+	resp := make(map[string]interface{})
 	resp["message"] = msg
+	if fields != nil {
+		resp["fields"] = fields
+	}
 
 	encoder := json.NewEncoder(w)
 	err := encoder.Encode(resp)
@@ -69,4 +72,12 @@ func RespondWithError(w http.ResponseWriter, msg string, errCode int) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, `{"error": %v}`, err)
 	}
+}
+
+func RespondWithError(w http.ResponseWriter, msg string, errCode int) {
+	RespondError(w, msg, errCode, nil)
+}
+
+func RespondWithErrorFields(w http.ResponseWriter, msg string, errCode int, fields []string) {
+	RespondError(w, msg, errCode, fields)
 }
