@@ -36,7 +36,7 @@ func (s *APIRoute) handleList(w http.ResponseWriter, r *http.Request) {
 		server.RespondWithError(w, fmt.Sprintf("error while getting list: %s", err), http.StatusBadRequest)
 		return
 	}
-	server.Respond(w, todos)
+	server.RespondOK(w, todos)
 }
 
 func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +64,7 @@ func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(os.Stderr, "error while generating the todo: %s\n", createErr)
 	}
 
-	server.Respond(w, createdTodo)
+	server.RespondCreated(w, createdTodo)
 }
 
 func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +98,7 @@ func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	server.Respond(w, updatedTodo)
+	server.RespondOK(w, updatedTodo)
 }
 
 func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +130,7 @@ func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) 
 			server.RespondWithError(w, removeErr.Error(), http.StatusBadRequest)
 			return
 		} else {
-			server.Respond(w, removedTodo)
+			server.RespondNoContent(w, removedTodo)
 			return
 		}
 	} else {
@@ -139,7 +139,7 @@ func (s *APIRoute) handleFetchAndDelete(w http.ResponseWriter, r *http.Request) 
 			server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		server.Respond(w, fetchedTodo)
+		server.RespondOK(w, fetchedTodo)
 		return
 	}
 }
