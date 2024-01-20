@@ -16,7 +16,7 @@ func NewAPIServer(listenAddr string) *APIServer {
 }
 
 func (s *APIServer) Run() {
-	http.ListenAndServe(s.ListenAddr, requestLogger(s.Router))
+	http.ListenAndServe(s.ListenAddr, RequestLoggerMiddleware(s.Router))
 }
 
 func DecodeBody(r *http.Request, v interface{}) error {

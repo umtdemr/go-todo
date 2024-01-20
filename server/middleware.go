@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-func requestLogger(next http.Handler) http.Handler {
+// RequestLoggerMiddleware is a middleware that logs the requests
+func RequestLoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
