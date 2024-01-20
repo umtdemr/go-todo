@@ -73,6 +73,89 @@ paths:
           description: New password applied successfully
         '400':
           description: Error occurred while applying new password
+  /todo:
+    get:
+      tags:
+        - Todo Operations
+      summary: List all todos
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Error occurred while getting list
+  /todo/list:
+    get:
+      tags:
+        - Todo Operations
+      summary: List all todos
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Error occurred while getting list
+  /todo/create:
+    post:
+      tags:
+        - Todo Operations
+      summary: Create a new todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTodoData'
+      responses:
+        '201':
+          description: Todo created successfully
+        '400':
+          description: Error occurred while creating todo
+  /todo/update:
+    post:
+      tags:
+        - Todo Operations
+      summary: Update a todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTodoData'
+      responses:
+        '200':
+          description: Todo updated successfully
+        '400':
+          description: Error occurred while updating todo
+  /todo/{id}:
+    get:
+      tags:
+        - Todo Operations
+      summary: Fetch a todo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Error occurred while fetching todo
+    delete:
+      tags:
+        - Todo Operations
+      summary: Delete a todo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Todo deleted successfully
+        '400':
+          description: Error occurred while deleting todo
 components:
   schemas:
     CreateUserData:
@@ -110,3 +193,21 @@ components:
           type: string
         password:
           type: string
+    CreateTodoData:
+        type: object
+        properties:
+          title:
+            type: string
+        required:
+          - title
+    UpdateTodoData:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        completed:
+          type: boolean
+      required:
+        - id
