@@ -22,6 +22,10 @@ paths:
       responses:
         '201':
           description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccess'
         '400':
           description: Error occurred while creating user
   /user/login:
@@ -39,6 +43,13 @@ paths:
       responses:
         '200':
           description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
         '400':
           description: Error occurred while logging in
   /user/reset-password-request:
@@ -52,9 +63,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ResetPasswordRequest'
+            example:
+              email: "testuser@test.com"
       responses:
         '200':
           description: Reset password request processed successfully
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    message: "success"
+                successWithToken:
+                  description: If the email service is not enabled, the token will be returned in the response
+                  value:
+                    message: "success"
+                    token: "string"
         '400':
           description: Error occurred while processing reset password request
   /user/new-password:
@@ -71,6 +95,10 @@ paths:
       responses:
         '200':
           description: New password applied successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccess'
         '400':
           description: Error occurred while applying new password
   /todo:
@@ -188,6 +216,10 @@ components:
         - username
         - password
         - email
+      example:
+        username: "testuser"
+        password: "password"
+        email: "testuser@test.com"
     LoginUserData:
       type: object
       properties:
@@ -197,6 +229,9 @@ components:
           type: string
         password:
           type: string
+      example:
+        username: "testuser"
+        password: "password"
 
     ResetPasswordRequest:
       type: object
@@ -228,3 +263,9 @@ components:
           type: boolean
       required:
         - id
+    MessageSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          default: "success"
