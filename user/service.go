@@ -101,12 +101,11 @@ func (service *Service) Login(data *LoginUserData) (string, error) {
 	return tokenString, nil
 }
 
-func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) (string, error) {
+func (service *Service) GenerateResetPasswordToken(data *ResetPasswordRequest) (string, error) {
 	if data.Email == "" {
 		return "", ErrEmailNotValid
 	}
 
-	// todo: create a common handler for this
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	if !emailRegex.MatchString(data.Email) {
