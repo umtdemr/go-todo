@@ -18,6 +18,7 @@ func NewAPIRoute(userService Service) *APIRoute {
 	return &APIRoute{Route: "user", Service: userService}
 }
 
+// RegisterAPIRoutes registers the routes for the user API
 func (route *APIRoute) RegisterAPIRoutes(router *mux.Router) {
 	router.HandleFunc("/user/register", route.handleCreateUser)
 	router.HandleFunc("/user/login", route.handleLogin)
@@ -25,7 +26,9 @@ func (route *APIRoute) RegisterAPIRoutes(router *mux.Router) {
 	router.HandleFunc("/user/new-password", route.handleNewPassword)
 }
 
+// handleCreateUser handles the create user request
 func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+	// only post requests are allowed
 	if r.Method != http.MethodPost {
 		server.RespondWithError(w, "only post requests are allowed", http.StatusBadRequest)
 		return
@@ -39,13 +42,18 @@ func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// create the user
 	createErr := route.Service.CreateUser(&userCreateData)
 	if createErr != nil {
 		var e UserError
+
+		// if the error is a UserError, respond with the fields that caused the error
 		if errors.As(createErr, &e) {
 			server.RespondWithErrorFields(w, fmt.Sprintf("validation error: %v", e.Error()), http.StatusBadRequest, e.fields)
 			return
 		}
+
+		// otherwise, respond with the error message
 		server.RespondWithError(w, fmt.Sprintf("error while creating user: %v", createErr), http.StatusBadRequest)
 		return
 	}
@@ -56,7 +64,9 @@ func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) 
 	return
 }
 
+// handleLogin handles the login request
 func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
+	// only post requests are allowed
 	if r.Method != http.MethodPost {
 		server.RespondWithError(w, "only post requests are allowed", http.StatusBadRequest)
 		return
@@ -72,8 +82,10 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, loginError := route.Service.Login(&userLoginData)
 
+	// if there is an error while logging in, respond with the error
 	if loginError != nil {
 		var e UserError
+		// if the error is a UserError, respond with the fields that caused the error
 		if errors.As(loginError, &e) {
 			server.RespondWithErrorFields(w, fmt.Sprintf("validation error: %v", e.Error()), http.StatusBadRequest, e.fields)
 			return
@@ -88,7 +100,9 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 	server.RespondOK(w, response)
 }
 
+// handleResetPasswordRequest handles the reset password request
 func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
+	// only post requests are allowed
 	if r.Method != http.MethodPost {
 		err := server.ErrNotValidMethod.With("only post requests are allowed")
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
@@ -103,13 +117,16 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 		return
 	}
 
-	tokenString, err := route.Service.SendResetPasswordToken(&resetPasswordRequestData)
+	// generate the reset password token
+	tokenString, err := route.Service.GenerateResetPasswordToken(&resetPasswordRequestData)
 
+	// if there is an error while sending the reset password token, respond with the error
 	if err != nil {
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// send the reset password token to the user
 	sendErr := email.Send(email.SendEmailData{
 		To:      []string{resetPasswordRequestData.Email},
 		Subject: "Your reset password token",
@@ -128,7 +145,9 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 	return
 }
 
+// handleNewPassword handles the new password request
 func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request) {
+	// only post requests are allowed
 	if r.Method != http.MethodPost {
 		err := server.ErrNotValidMethod.With("only post requests are allowed")
 		server.RespondWithError(w, err.Error(), http.StatusBadRequest)
@@ -142,6 +161,7 @@ func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// apply the new password
 	errApplyNewPassword := route.Service.ApplyNewPasswordWithToken(&newPasswordData)
 
 	if errApplyNewPassword != nil {

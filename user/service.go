@@ -101,7 +101,7 @@ func (service *Service) Login(data *LoginUserData) (string, error) {
 	return tokenString, nil
 }
 
-func (service *Service) SendResetPasswordToken(data *ResetPasswordRequest) (string, error) {
+func (service *Service) GenerateResetPasswordToken(data *ResetPasswordRequest) (string, error) {
 	if data.Email == "" {
 		return "", ErrEmailNotValid
 	}
