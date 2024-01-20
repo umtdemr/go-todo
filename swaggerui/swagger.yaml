@@ -1,11 +1,18 @@
 openapi: 3.0.0
 info:
   title: Todo API
+  description: A simple Todo API with JWT authentication
+  contact:
+    name: Ümit Demir
+    email: "umitde296@gmail.com"
+    url: "https://umitde.com"
   version: 1.0.0
 paths:
   /user/register:
     post:
       summary: Register a new user
+      tags:
+        - User
       requestBody:
         required: true
         content:
@@ -21,6 +28,8 @@ paths:
     post:
       summary: Login a user
       description: you can login with either username or email
+      tags:
+        - User
       requestBody:
         required: true
         content:
@@ -35,6 +44,8 @@ paths:
   /user/reset-password-request:
     post:
       summary: Request to reset password
+      tags:
+        - User
       requestBody:
         required: true
         content:
@@ -49,6 +60,8 @@ paths:
   /user/new-password:
     post:
       summary: Apply new password
+      tags:
+        - User
       requestBody:
         required: true
         content:
