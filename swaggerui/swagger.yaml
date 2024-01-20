@@ -78,6 +78,8 @@ paths:
       tags:
         - Todo Operations
       summary: List all todos
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Success
@@ -88,6 +90,8 @@ paths:
       tags:
         - Todo Operations
       summary: List all todos
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Success
@@ -98,6 +102,8 @@ paths:
       tags:
         - Todo Operations
       summary: Create a new todo
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -114,6 +120,8 @@ paths:
       tags:
         - Todo Operations
       summary: Update a todo
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -130,6 +138,8 @@ paths:
       tags:
         - Todo Operations
       summary: Fetch a todo
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -145,6 +155,8 @@ paths:
       tags:
         - Todo Operations
       summary: Delete a todo
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -157,6 +169,11 @@ paths:
         '400':
           description: Error occurred while deleting todo
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     CreateUserData:
       type: object
