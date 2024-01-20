@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: Todo API
+  version: 1.0.0
+paths:
+  /user/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserData'
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Error occurred while creating user
+  /user/login:
+    post:
+      summary: Login a user
+      description: you can login with either username or email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserData'
+      responses:
+        '200':
+          description: User logged in successfully
+        '400':
+          description: Error occurred while logging in
+  /user/reset-password-request:
+    post:
+      summary: Request to reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Reset password request processed successfully
+        '400':
+          description: Error occurred while processing reset password request
+  /user/new-password:
+    post:
+      summary: Apply new password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPasswordRequest'
+      responses:
+        '200':
+          description: New password applied successfully
+        '400':
+          description: Error occurred while applying new password
+components:
+  schemas:
+    CreateUserData:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+      required:
+        - username
+        - password
+        - email
+    LoginUserData:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+    NewPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        password:
+          type: string

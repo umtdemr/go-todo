@@ -3,14 +3,26 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"github.com/umtdemr/go-todo/email"
 	"github.com/umtdemr/go-todo/logger"
 	"github.com/umtdemr/go-todo/server"
 	"github.com/umtdemr/go-todo/todo"
 	"github.com/umtdemr/go-todo/user"
+	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 )
+
+func RunSwagger(router *mux.Router) {
+	_, b, _, _ := runtime.Caller(0)
+	basepath := filepath.Dir(b)
+	path := filepath.Join(basepath, "swaggerui")
+	fs := http.FileServer(http.Dir(path))
+	router.PathPrefix("/swaggerui/").Handler(http.StripPrefix("/swaggerui/", fs))
+}
 
 func main() {
 	viper.SetConfigFile(".env")
@@ -67,6 +79,7 @@ func main() {
 	todoAPIRoute := todo.NewTodoAPIRoute(todoService)
 	todoAPIRoute.RegisterRoutes(apiServer.Router, *userService)
 
+	RunSwagger(apiServer.Router)
 	log.Info().Msg("Server is running")
 	apiServer.Run()
 }
