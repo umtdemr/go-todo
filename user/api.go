@@ -1,7 +1,6 @@
 package user
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -34,9 +33,7 @@ func (route *APIRoute) handleCreateUser(w http.ResponseWriter, r *http.Request) 
 
 	var userCreateData CreateUserData
 
-	decoder := json.NewDecoder(r.Body)
-
-	decodeErr := decoder.Decode(&userCreateData)
+	decodeErr := server.DecodeBody(r, &userCreateData)
 	if decodeErr != nil {
 		server.RespondWithError(w, "make sure you provided all the necessary values", http.StatusBadRequest)
 		return
@@ -67,9 +64,7 @@ func (route *APIRoute) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	var userLoginData LoginUserData
 
-	decoder := json.NewDecoder(r.Body)
-
-	decodeErr := decoder.Decode(&userLoginData)
+	decodeErr := server.DecodeBody(r, &userLoginData)
 	if decodeErr != nil {
 		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
 		return
@@ -102,9 +97,7 @@ func (route *APIRoute) handleResetPasswordRequest(w http.ResponseWriter, r *http
 
 	var resetPasswordRequestData ResetPasswordRequest
 
-	// TODO: I can create a common handler for decoding the body since I've repeated this so much
-	decoder := json.NewDecoder(r.Body)
-	decodeErr := decoder.Decode(&resetPasswordRequestData)
+	decodeErr := server.DecodeBody(r, &resetPasswordRequestData)
 	if decodeErr != nil {
 		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
 		return
@@ -143,8 +136,7 @@ func (route *APIRoute) handleNewPassword(w http.ResponseWriter, r *http.Request)
 	}
 
 	var newPasswordData NewPasswordRequest
-	decoder := json.NewDecoder(r.Body)
-	decodeErr := decoder.Decode(&newPasswordData)
+	decodeErr := server.DecodeBody(r, &newPasswordData)
 	if decodeErr != nil {
 		server.RespondWithError(w, "couldn't decode the body", http.StatusBadRequest)
 		return
