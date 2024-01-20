@@ -6,7 +6,7 @@ import (
 )
 
 type Todo struct {
-	Id        int
+	Id        int       `json:"id"`
 	Title     string    `json:"title"`
 	Done      bool      `json:"done"`
 	CreatedAt time.Time `json:"createdAt"`

@@ -111,6 +111,12 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
         '400':
           description: Error occurred while getting list
   /todo/list:
@@ -123,6 +129,12 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
         '400':
           description: Error occurred while getting list
   /todo/create:
@@ -141,6 +153,10 @@ paths:
       responses:
         '201':
           description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
         '400':
           description: Error occurred while creating todo
   /todo/update:
@@ -159,6 +175,10 @@ paths:
       responses:
         '200':
           description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
         '400':
           description: Error occurred while updating todo
   /todo/{id}:
@@ -177,6 +197,10 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
         '400':
           description: Error occurred while fetching todo
     delete:
@@ -194,6 +218,10 @@ paths:
       responses:
         '204':
           description: Todo deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
         '400':
           description: Error occurred while deleting todo
 components:
@@ -269,3 +297,18 @@ components:
         message:
           type: string
           default: "success"
+    Todo:
+        type: object
+        properties:
+            id:
+              type: integer
+            title:
+              type: string
+            done:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
