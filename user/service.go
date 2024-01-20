@@ -106,7 +106,6 @@ func (service *Service) GenerateResetPasswordToken(data *ResetPasswordRequest) (
 		return "", ErrEmailNotValid
 	}
 
-	// todo: create a common handler for this
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	if !emailRegex.MatchString(data.Email) {
