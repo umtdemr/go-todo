@@ -1,0 +1,314 @@
+openapi: 3.0.0
+info:
+  title: Todo API
+  description: A simple Todo API with JWT authentication
+  contact:
+    name: Ümit Demir
+    email: "umitde296@gmail.com"
+    url: "https://umitde.com"
+  version: 1.0.0
+paths:
+  /user/register:
+    post:
+      summary: Register a new user
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserData'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccess'
+        '400':
+          description: Error occurred while creating user
+  /user/login:
+    post:
+      summary: Login a user
+      description: you can login with either username or email
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserData'
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '400':
+          description: Error occurred while logging in
+  /user/reset-password-request:
+    post:
+      summary: Request to reset password
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+            example:
+              email: "testuser@test.com"
+      responses:
+        '200':
+          description: Reset password request processed successfully
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    message: "success"
+                successWithToken:
+                  description: If the email service is not enabled, the token will be returned in the response
+                  value:
+                    message: "success"
+                    token: "string"
+        '400':
+          description: Error occurred while processing reset password request
+  /user/new-password:
+    post:
+      summary: Apply new password
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPasswordRequest'
+      responses:
+        '200':
+          description: New password applied successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSuccess'
+        '400':
+          description: Error occurred while applying new password
+  /todo:
+    get:
+      tags:
+        - Todo Operations
+      summary: List all todos
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '400':
+          description: Error occurred while getting list
+  /todo/list:
+    get:
+      tags:
+        - Todo Operations
+      summary: List all todos
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '400':
+          description: Error occurred while getting list
+  /todo/create:
+    post:
+      tags:
+        - Todo Operations
+      summary: Create a new todo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTodoData'
+      responses:
+        '201':
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '400':
+          description: Error occurred while creating todo
+  /todo/update:
+    post:
+      tags:
+        - Todo Operations
+      summary: Update a todo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTodoData'
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '400':
+          description: Error occurred while updating todo
+  /todo/{id}:
+    get:
+      tags:
+        - Todo Operations
+      summary: Fetch a todo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '400':
+          description: Error occurred while fetching todo
+    delete:
+      tags:
+        - Todo Operations
+      summary: Delete a todo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Todo deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '400':
+          description: Error occurred while deleting todo
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateUserData:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+      required:
+        - username
+        - password
+        - email
+      example:
+        username: "testuser"
+        password: "password"
+        email: "testuser@test.com"
+    LoginUserData:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        username: "testuser"
+        password: "password"
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+    NewPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+    CreateTodoData:
+        type: object
+        properties:
+          title:
+            type: string
+        required:
+          - title
+    UpdateTodoData:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        completed:
+          type: boolean
+      required:
+        - id
+    MessageSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          default: "success"
+    Todo:
+        type: object
+        properties:
+            id:
+              type: integer
+            title:
+              type: string
+            done:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
