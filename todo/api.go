@@ -1,7 +1,6 @@
 package todo
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/umtdemr/go-todo/server"
@@ -48,9 +47,7 @@ func (s *APIRoute) handleAdd(w http.ResponseWriter, r *http.Request) {
 
 	var createTodoType CreateTodoData
 
-	decoder := json.NewDecoder(r.Body)
-
-	err := decoder.Decode(&createTodoType)
+	err := server.DecodeBody(r, &createTodoType)
 
 	if err != nil {
 		server.RespondWithError(w, fmt.Sprintf("parsing error: %v", err), http.StatusBadRequest)
@@ -76,9 +73,7 @@ func (s *APIRoute) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	var updateData UpdateTodoData
 
-	decoder := json.NewDecoder(r.Body)
-
-	err := decoder.Decode(&updateData)
+	err := server.DecodeBody(r, &updateData)
 
 	if err != nil {
 		server.RespondWithError(w, fmt.Sprintf("error while parsing: %s", err), http.StatusBadRequest)
