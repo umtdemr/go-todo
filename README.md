@@ -53,7 +53,7 @@ A basic REST API for todo app with PostgreSQL
 #### Authentication and Authorization
   * Authentication and authorization with JWT in Go using [Argon2id](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id) hashing algorithm which is the winner of the [Password Hashing Competition](https://en.wikipedia.org/wiki/Password_Hashing_Competition)
   * Tried to follow the best practices for authentication. See [OWASP Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
-  * Used [github.com/golang-jwt/jwt/](github.com/golang-jwt/jwt/) for JWT parsing and generation
+  * Used [github.com/golang-jwt/jwt/](https://github.com/golang-jwt/jwt/) for JWT parsing and generation
 #### Email
   * I created email package for sending emails
   * I didn't want to use any third party email service for a simple todo app. Thanks to that, I learned how it's hard to handle email.
@@ -61,7 +61,11 @@ A basic REST API for todo app with PostgreSQL
   * I didn't want to use any ORM and migration tool since I wanted to learn how to do it manually in Go
   * Used [pgx](github.com/jackc/pgx) for PostgreSQL connection
 
+#### Testing
+  * I wrote some unit tests for email and user services
+  * I've used [testify](https://github.com/stretchr/testify) for assertions and mocking
+
 #### Other
-* Used [gorilla/mux](github.com/gorilla/mux) for routing but I think I could have done it manually
-* Used [zerolog](github.com/rs/zerolog) for logging
+* Used [gorilla/mux](https://github.com/gorilla/mux) for routing but I think I could have done it manually
+* Used [zerolog](https://github.com/rs/zerolog) for logging
   * I chose zerolog because it's fast and easy to use
