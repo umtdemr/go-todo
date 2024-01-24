@@ -4,6 +4,17 @@ A basic REST API for todo app with PostgreSQL
 
 ![Swagger UI Documentation for Todo](./swaggerui/swagger-home.png)
 
+## Things I tried to cover
+
+* Authentication and authorization with JWT
+* Email sending
+* PostgreSQL
+* Docker
+* Open API 3.0 documentation with Swagger UI
+* Unit tests (for email and user service)
+* Logging
+* Error wrapping
+
 ## How to run
 
 ### Running with Docker
@@ -65,7 +76,16 @@ A basic REST API for todo app with PostgreSQL
   * I wrote some unit tests for email and user services
   * I've used [testify](https://github.com/stretchr/testify) for assertions and mocking
 
+#### Error handling
+  * I created a custom error type for wrapping errors in some packages. I liked creating custom error types because it's easy to differentiate errors and handle them accordingly. As a result, I can return meaningful errors to the client.
+
 #### Other
 * Used [gorilla/mux](https://github.com/gorilla/mux) for routing but I think I could have done it manually
 * Used [zerolog](https://github.com/rs/zerolog) for logging
   * I chose zerolog because it's fast and easy to use
+
+## Questions
+
+* Is it a good idea to store user data in the context if the handler is wrapped with authorization middleware?
+* My IDE yells at me for using package names in the variable names. For example, I used `UserError` variable name in `user` package. Is it a bad practice?
+* Is there any part that I might build with goroutines in this project?
